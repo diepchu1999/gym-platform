@@ -1,6 +1,6 @@
--- P1 Branch + Room. Ref: data-model/p1-identity-org.md
+-- P1 Branch + Room (schema: branch). Ref: data-model/p1-identity-org.md
 
-CREATE TABLE branch_branch (
+CREATE TABLE branch.branch_branch (
     id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     code       VARCHAR(30)  NOT NULL UNIQUE,
     name       VARCHAR(150) NOT NULL,
@@ -14,9 +14,10 @@ CREATE TABLE branch_branch (
     updated_at timestamptz  NOT NULL DEFAULT now()
 );
 
-CREATE TABLE branch_room (
+-- FK nội bộ module branch -> giữ
+CREATE TABLE branch.branch_room (
     id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    branch_id  BIGINT      NOT NULL REFERENCES branch_branch(id),
+    branch_id  BIGINT      NOT NULL REFERENCES branch.branch_branch(id),
     code       VARCHAR(30) NOT NULL,
     name       VARCHAR(100),
     room_type  VARCHAR(30) NOT NULL CHECK (room_type IN ('GENERAL','CLASS_ROOM','PT_AREA','PRIVATE_ROOM','MASSAGE_ROOM')),
@@ -26,6 +27,6 @@ CREATE TABLE branch_room (
     updated_at timestamptz NOT NULL DEFAULT now(),
     UNIQUE (branch_id, code)
 );
-CREATE INDEX ix_branch_room_branch ON branch_room(branch_id);
+CREATE INDEX ix_branch_room_branch ON branch.branch_room(branch_id);
 
-SELECT apply_updated_at_triggers();
+SELECT public.apply_updated_at_triggers();

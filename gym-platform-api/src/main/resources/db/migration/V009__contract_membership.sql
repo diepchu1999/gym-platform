@@ -1,11 +1,12 @@
--- P3 Contract + Membership. Ref: data-model/p3-package-contract-payment.md
+-- P3 Contract (schema: contract) + Membership (schema: membership).
+-- Logical refs chéo module: member, branch, contract<->membership, package_plan(contract->membership).
 
-CREATE TABLE contract (
+CREATE TABLE contract.contract (
     id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     contract_code   VARCHAR(30)  NOT NULL UNIQUE,
-    member_id       BIGINT       NOT NULL REFERENCES member_profile(id),
-    package_plan_id BIGINT       NOT NULL REFERENCES package_plan(id),
-    sale_branch_id  BIGINT       NOT NULL REFERENCES branch_branch(id),
+    member_id       BIGINT       NOT NULL,           -- logical ref -> member
+    package_plan_id BIGINT       NOT NULL,           -- logical ref -> membership.package_plan
+    sale_branch_id  BIGINT       NOT NULL,           -- logical ref -> branch
     status          VARCHAR(20)  NOT NULL DEFAULT 'DRAFT'
         CHECK (status IN ('DRAFT','PENDING_SIGNATURE','ACTIVE','EXPIRED','TERMINATED','CANCELLED','SUSPENDED')),
     signed_at       timestamptz,
@@ -17,15 +18,15 @@ CREATE TABLE contract (
     created_at      timestamptz  NOT NULL DEFAULT now(),
     updated_at      timestamptz  NOT NULL DEFAULT now()
 );
-CREATE INDEX ix_contract_member ON contract(member_id);
+CREATE INDEX ix_contract_member ON contract.contract(member_id);
 
-CREATE TABLE membership (
+CREATE TABLE membership.membership (
     id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     code            VARCHAR(30)  NOT NULL UNIQUE,
-    member_id       BIGINT       NOT NULL REFERENCES member_profile(id),
-    package_plan_id BIGINT       NOT NULL REFERENCES package_plan(id),
-    contract_id     BIGINT       REFERENCES contract(id),
-    sale_branch_id  BIGINT       NOT NULL REFERENCES branch_branch(id),
+    member_id       BIGINT       NOT NULL,           -- logical ref -> member
+    package_plan_id BIGINT       NOT NULL REFERENCES membership.package_plan(id), -- intra: giữ FK
+    contract_id     BIGINT,                          -- logical ref -> contract
+    sale_branch_id  BIGINT       NOT NULL,           -- logical ref -> branch
     status          VARCHAR(20)  NOT NULL DEFAULT 'PENDING_PAYMENT'
         CHECK (status IN ('PENDING_PAYMENT','ACTIVE','EXPIRED','SUSPENDED','CANCELLED')),
     effective_from  timestamptz,
@@ -33,7 +34,7 @@ CREATE TABLE membership (
     created_at      timestamptz  NOT NULL DEFAULT now(),
     updated_at      timestamptz  NOT NULL DEFAULT now()
 );
-CREATE INDEX ix_membership_member_status ON membership(member_id, status);
-CREATE INDEX ix_membership_effective_to  ON membership(effective_to);
+CREATE INDEX ix_membership_member_status ON membership.membership(member_id, status);
+CREATE INDEX ix_membership_effective_to  ON membership.membership(effective_to);
 
-SELECT apply_updated_at_triggers();
+SELECT public.apply_updated_at_triggers();

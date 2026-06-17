@@ -1,8 +1,9 @@
--- P8 Notification. Ref: data-model/p8-crm-rating-promotion-notification-audit.md
+-- P8 Notification (schema: notification). Ref: data-model/p8-...md
+-- Logical ref: member.
 
-CREATE TABLE notification_message (
+CREATE TABLE notification.notification_message (
     id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    member_id     BIGINT      REFERENCES member_profile(id),
+    member_id     BIGINT,                            -- logical ref -> member
     channel       VARCHAR(10) NOT NULL CHECK (channel IN ('EMAIL','SMS','PUSH','ZALO')),
     template_code VARCHAR(60),
     payload       JSONB,
@@ -12,5 +13,5 @@ CREATE TABLE notification_message (
     retry_count   INT         NOT NULL DEFAULT 0,
     created_at    timestamptz NOT NULL DEFAULT now()
 );
-CREATE INDEX ix_notification_member ON notification_message(member_id);
-CREATE INDEX ix_notification_status ON notification_message(status, scheduled_at);
+CREATE INDEX ix_notification_member ON notification.notification_message(member_id);
+CREATE INDEX ix_notification_status ON notification.notification_message(status, scheduled_at);

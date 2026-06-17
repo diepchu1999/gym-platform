@@ -1,3 +1,36 @@
 spring:
   application:
     name: gym-platform-api
+
+  # Datasource -> Postgres (compose). Default khớp infra/docker/docker-compose.yml.
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/gym_platform}
+    username: ${DB_USERNAME:gym}
+    password: ${DB_PASSWORD:gym_dev_password}
+
+  # Flyway tự chạy migration (V001..) lúc boot.
+  # default-schema=public: bảng lịch sử flyway_schema_history nằm ở public;
+  # migration tự tạo + dùng schema-per-module (schema-qualified).
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    default-schema: public
+
+server:
+  port: ${SERVER_PORT:8080}
+
+# Observability: Actuator + Prometheus + tracing (Zipkin)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLE:1.0}
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}

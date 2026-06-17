@@ -1,7 +1,6 @@
--- P1 Identity + RBAC. Ref: data-model/p1-identity-org.md
--- identity_user_account: ánh xạ principal nội bộ <-> Keycloak (ADR-0006), KHÔNG lưu mật khẩu.
+-- P1 Identity + RBAC (schema: identity). Ref: data-model/p1-identity-org.md
 
-CREATE TABLE identity_user_account (
+CREATE TABLE identity.identity_user_account (
     id               BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     keycloak_user_id UUID        NOT NULL,
     account_type     VARCHAR(20) NOT NULL CHECK (account_type IN ('STAFF','MEMBER')),
@@ -12,11 +11,11 @@ CREATE TABLE identity_user_account (
     created_at       timestamptz NOT NULL DEFAULT now(),
     updated_at       timestamptz NOT NULL DEFAULT now()
 );
-CREATE UNIQUE INDEX ux_user_account_kc       ON identity_user_account(keycloak_user_id);
-CREATE UNIQUE INDEX ux_user_account_username ON identity_user_account(username) WHERE username IS NOT NULL;
-CREATE UNIQUE INDEX ux_user_account_email    ON identity_user_account(email)    WHERE email IS NOT NULL;
+CREATE UNIQUE INDEX ux_user_account_kc       ON identity.identity_user_account(keycloak_user_id);
+CREATE UNIQUE INDEX ux_user_account_username ON identity.identity_user_account(username) WHERE username IS NOT NULL;
+CREATE UNIQUE INDEX ux_user_account_email    ON identity.identity_user_account(email)    WHERE email IS NOT NULL;
 
-CREATE TABLE rbac_role (
+CREATE TABLE identity.rbac_role (
     id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     code        VARCHAR(50)  NOT NULL UNIQUE,
     name        VARCHAR(100) NOT NULL,
@@ -27,7 +26,7 @@ CREATE TABLE rbac_role (
     updated_at  timestamptz  NOT NULL DEFAULT now()
 );
 
-CREATE TABLE rbac_permission (
+CREATE TABLE identity.rbac_permission (
     id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     code        VARCHAR(80) NOT NULL UNIQUE,
     module      VARCHAR(50),
@@ -36,11 +35,12 @@ CREATE TABLE rbac_permission (
     updated_at  timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TABLE rbac_role_permission (
-    role_id       BIGINT NOT NULL REFERENCES rbac_role(id)       ON DELETE CASCADE,
-    permission_id BIGINT NOT NULL REFERENCES rbac_permission(id) ON DELETE CASCADE,
+-- FK nội bộ module identity -> giữ
+CREATE TABLE identity.rbac_role_permission (
+    role_id       BIGINT NOT NULL REFERENCES identity.rbac_role(id)       ON DELETE CASCADE,
+    permission_id BIGINT NOT NULL REFERENCES identity.rbac_permission(id) ON DELETE CASCADE,
     PRIMARY KEY (role_id, permission_id)
 );
-CREATE INDEX ix_role_permission_perm ON rbac_role_permission(permission_id);
+CREATE INDEX ix_role_permission_perm ON identity.rbac_role_permission(permission_id);
 
-SELECT apply_updated_at_triggers();
+SELECT public.apply_updated_at_triggers();

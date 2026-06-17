@@ -1,9 +1,10 @@
--- P3 Installment application (FE Credit / Home Credit). Ref: data-model/p3-package-contract-payment.md
+-- P3 Installment (schema: finance). Ref: data-model/p3-package-contract-payment.md
+-- Logical ref: order_id -> payment.customer_order (KHÔNG FK chéo module).
 
-CREATE TABLE installment_application (
+CREATE TABLE finance.installment_application (
     id                        BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     application_code          VARCHAR(30)  NOT NULL UNIQUE,
-    order_id                  BIGINT       NOT NULL REFERENCES customer_order(id),
+    order_id                  BIGINT       NOT NULL,   -- logical ref -> payment.customer_order
     provider                  VARCHAR(40)  NOT NULL,
     status                    VARCHAR(30)  NOT NULL DEFAULT 'DRAFT'
         CHECK (status IN ('DRAFT','SUBMITTED','PENDING_PROVIDER_APPROVAL','APPROVED','REJECTED','CANCELLED','DISBURSED')),
@@ -15,6 +16,6 @@ CREATE TABLE installment_application (
     created_at                timestamptz  NOT NULL DEFAULT now(),
     updated_at                timestamptz  NOT NULL DEFAULT now()
 );
-CREATE INDEX ix_installment_order ON installment_application(order_id);
+CREATE INDEX ix_installment_order ON finance.installment_application(order_id);
 
-SELECT apply_updated_at_triggers();
+SELECT public.apply_updated_at_triggers();

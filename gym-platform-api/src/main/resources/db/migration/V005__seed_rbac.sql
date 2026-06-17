@@ -1,8 +1,6 @@
--- P1 Seed: 15 roles + starter permissions, grant all to SUPER_ADMIN.
--- Ref: data-model/p1-identity-org.md, modules/staff-rbac.md
--- Bootstrap SUPER_ADMIN account/staff KHÔNG seed ở đây (mật khẩu/keycloak_user_id nạp qua script riêng).
+-- P1 Seed RBAC (schema: identity). Ref: data-model/p1-identity-org.md
 
-INSERT INTO rbac_role (code, name, scope, is_system) VALUES
+INSERT INTO identity.rbac_role (code, name, scope, is_system) VALUES
     ('SUPER_ADMIN',       'Super Admin',        'GLOBAL', true),
     ('OPERATION_MANAGER', 'Operation Manager',  'GLOBAL', true),
     ('BRANCH_MANAGER',    'Branch Manager',     'BRANCH', true),
@@ -19,7 +17,7 @@ INSERT INTO rbac_role (code, name, scope, is_system) VALUES
     ('MARKETING_STAFF',   'Marketing Staff',    'BRANCH', true),
     ('PARTNER_MANAGER',   'Partner Manager',    'BRANCH', true);
 
-INSERT INTO rbac_permission (code, module, description) VALUES
+INSERT INTO identity.rbac_permission (code, module, description) VALUES
     ('MEMBER_CREATE',         'member',     'Create member'),
     ('MEMBER_VIEW',           'member',     'View member'),
     ('MEMBER_VIEW_FULL_CCCD', 'kyc',        'View full CCCD (sensitive)'),
@@ -38,9 +36,8 @@ INSERT INTO rbac_permission (code, module, description) VALUES
     ('STAFF_MANAGE',          'staff',      'Manage staff'),
     ('RBAC_MANAGE',           'identity',   'Manage roles/permissions');
 
--- SUPER_ADMIN có toàn quyền
-INSERT INTO rbac_role_permission (role_id, permission_id)
+INSERT INTO identity.rbac_role_permission (role_id, permission_id)
 SELECT r.id, p.id
-FROM rbac_role r
-CROSS JOIN rbac_permission p
+FROM identity.rbac_role r
+CROSS JOIN identity.rbac_permission p
 WHERE r.code = 'SUPER_ADMIN';

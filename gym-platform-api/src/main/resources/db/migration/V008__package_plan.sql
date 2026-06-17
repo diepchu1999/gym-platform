@@ -1,6 +1,6 @@
--- P3 Package catalog. Ref: data-model/p3-package-contract-payment.md
+-- P3 Package catalog (schema: membership). Ref: data-model/p3-package-contract-payment.md
 
-CREATE TABLE package_plan (
+CREATE TABLE membership.package_plan (
     id                              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     code                            VARCHAR(40)  NOT NULL UNIQUE,
     name                            VARCHAR(150) NOT NULL,
@@ -21,4 +21,4 @@ CREATE TABLE package_plan (
     updated_at                      timestamptz  NOT NULL DEFAULT now()
 );
 
-SELECT apply_updated_at_triggers();
+SELECT public.apply_updated_at_triggers();
