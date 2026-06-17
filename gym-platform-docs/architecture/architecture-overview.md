@@ -17,7 +17,15 @@ Spring Boot Modular Monolith API
 PostgreSQL
 ```
 
-Future supporting infrastructure may include Redis, object storage, background jobs, queue, and monitoring.
+Future supporting infrastructure may include Redis, object storage, and background jobs.
+
+> **Adopted supporting infrastructure (see [`solution-architecture.md`](solution-architecture.md) + ADR-0006/0007/0008):**
+> - **Keycloak** — authentication / OIDC identity provider (app does branch-scoped authorization).
+> - **Apache Kafka** — async event backbone via Transactional Outbox (core consistency stays in PostgreSQL).
+> - **Prometheus + Grafana** — metrics & dashboards (Micrometer / Actuator).
+> - **Zipkin** — distributed tracing.
+>
+> These are *supporting infrastructure*. The system remains a **Modular Monolith** (one deployable).
 
 ## Backend Architecture Style
 Use SOLID principles and a practical Clean/Hexagonal Architecture style.
