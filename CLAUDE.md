@@ -22,42 +22,42 @@ The system supports:
 Before implementing any feature, read this file first. Then read only the docs relevant to the current task.
 
 Core business docs:
-- `docs/business/GYM_Business_Requirement_Document_v1.md`
-- `docs/business/domain-map.md`
-- `docs/business/business-rules.md`
-- `docs/business/status-flow.md`
-- `docs/business/glossary.md`
+- `gym-platform-docs/business/GYM_Business_Requirement_Document_v1.md`
+- `gym-platform-docs/business/domain-map.md`
+- `gym-platform-docs/business/business-rules.md`
+- `gym-platform-docs/business/status-flow.md`
+- `gym-platform-docs/business/glossary.md`
 
 Core architecture docs:
-- `docs/architecture/architecture-overview.md`
-- `docs/architecture/modular-monolith.md`
-- `docs/architecture/backend-guideline.md`
-- `docs/architecture/database-guideline.md`
-- `docs/architecture/frontend-guideline.md`
-- `docs/architecture/development-guideline.md`
-- `docs/architecture/api-guideline.md`
-- `docs/architecture/security-guideline.md`
+- `gym-platform-docs/architecture/architecture-overview.md`
+- `gym-platform-docs/architecture/modular-monolith.md`
+- `gym-platform-docs/architecture/backend-guideline.md`
+- `gym-platform-docs/architecture/database-guideline.md`
+- `gym-platform-docs/architecture/frontend-guideline.md`
+- `gym-platform-docs/architecture/development-guideline.md`
+- `gym-platform-docs/architecture/api-guideline.md`
+- `gym-platform-docs/architecture/security-guideline.md`
 
 Module docs:
-- `docs/modules/member-kyc.md`
-- `docs/modules/package-contract-payment.md`
-- `docs/modules/checkin.md`
-- `docs/modules/booking-engine.md`
-- `docs/modules/pt-booking.md`
-- `docs/modules/group-class.md`
-- `docs/modules/private-room.md`
-- `docs/modules/massage.md`
-- `docs/modules/inventory-pantry.md`
-- `docs/modules/equipment-maintenance.md`
-- `docs/modules/staff-rbac.md`
-- `docs/modules/crm-customer-care.md`
+- `gym-platform-docs/modules/member-kyc.md`
+- `gym-platform-docs/modules/package-contract-payment.md`
+- `gym-platform-docs/modules/checkin.md`
+- `gym-platform-docs/modules/booking-engine.md`
+- `gym-platform-docs/modules/pt-booking.md`
+- `gym-platform-docs/modules/group-class.md`
+- `gym-platform-docs/modules/private-room.md`
+- `gym-platform-docs/modules/massage.md`
+- `gym-platform-docs/modules/inventory-pantry.md`
+- `gym-platform-docs/modules/equipment-maintenance.md`
+- `gym-platform-docs/modules/staff-rbac.md`
+- `gym-platform-docs/modules/crm-customer-care.md`
 
 Technical decisions:
-- `docs/decisions/adr-0001-use-modular-monolith.md`
-- `docs/decisions/adr-0002-use-spring-boot.md`
-- `docs/decisions/adr-0003-use-postgresql.md`
-- `docs/decisions/adr-0004-use-native-sql-instead-of-jpa.md`
-- `docs/decisions/adr-0005-use-react-typescript-web-first.md`
+- `gym-platform-docs/decisions/adr-0001-use-modular-monolith.md`
+- `gym-platform-docs/decisions/adr-0002-use-spring-boot.md`
+- `gym-platform-docs/decisions/adr-0003-use-postgresql.md`
+- `gym-platform-docs/decisions/adr-0004-use-native-sql-instead-of-jpa.md`
+- `gym-platform-docs/decisions/adr-0005-use-react-typescript-web-first.md`
 
 ## Architecture Rule
 Use Modular Monolith first.
@@ -92,6 +92,14 @@ Backend:
 - Prefer `NamedParameterJdbcTemplate` at the beginning unless a later ADR changes it.
 - Use Flyway for database migration unless a later ADR changes it.
 
+Supporting infrastructure (approved — still Modular Monolith, one deployable):
+- Keycloak for authentication / OIDC; branch-scoped authorization stays in the app `identity` module (ADR-0006).
+- Redis for cache + short-lived locks (QR token TTL, one-time nonce, duplicate-scan lock, rate limiting); durable uniqueness stays in PostgreSQL (ADR-0009).
+- S3-compatible Object Storage for documents/images (CCCD, contract PDF, invoices, media); DB stores object key only (ADR-0010).
+- Transactional Outbox now; Kafka as async backbone later (ADR-0007).
+- Observability: Prometheus + Grafana (metrics) and Zipkin (tracing) via Micrometer; Loki/ELK for logs later (ADR-0008).
+- Full design: `gym-platform-docs/architecture/solution-architecture.md`.
+
 Frontend:
 - React.
 - TypeScript.
@@ -101,7 +109,7 @@ Frontend:
 
 Documentation rule:
 - Every new technical decision must update the relevant Markdown docs.
-- If the decision is architectural or hard to reverse, create or update an ADR in `docs/decisions/`.
+- If the decision is architectural or hard to reverse, create or update an ADR in `gym-platform-docs/decisions/`.
 - Do not leave important rules only in chat.
 
 ## Critical Business Rules

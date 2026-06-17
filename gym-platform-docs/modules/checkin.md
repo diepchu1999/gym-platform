@@ -84,3 +84,11 @@ Use transaction and unique/atomic update on token usage.
 - Expired QR denied.
 - Used QR denied.
 - Duplicate scan denied.
+
+## Technical Notes (implementation)
+
+> Implementation detail only — does NOT change the business rules above. See ADR-0009 (Redis) + `architecture/solution-architecture.md`.
+
+- **Redis (ephemeral / fast gate)**: QR token TTL (30–60s), one-time nonce, duplicate-scan short lock (3–5 min window), and rate limiting.
+- **PostgreSQL (durable / source of truth)**: final QR nonce consumption (unique constraint), trial daily-check-in limit, and check-in log. Authoritative race protection lives here, not in Redis.
+- Pattern: Redis is the fast first check; the DB unique/atomic update is the authoritative guard. Both must agree before access is granted.

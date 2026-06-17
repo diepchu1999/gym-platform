@@ -1,0 +1,290 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1800" viewBox="0 0 2400 1800"><defs><filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#0f172a" flood-opacity="0.10"/></filter><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#F8FBFF"/><stop offset="100%" stop-color="#FFF7FE"/></linearGradient><marker id="m_64748b" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L11,4 z" fill="#64748b"/></marker><marker id="m_10b981" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L11,4 z" fill="#10b981"/></marker><marker id="m_7c3aed" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L11,4 z" fill="#7c3aed"/></marker><marker id="m_0d9488" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L11,4 z" fill="#0d9488"/></marker><marker id="m_f97316" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L11,4 z" fill="#f97316"/></marker><marker id="m_2563eb" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L11,4 z" fill="#2563eb"/></marker><marker id="m_dc2626" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L11,4 z" fill="#dc2626"/></marker><marker id="m_d97706" markerWidth="12" markerHeight="12" refX="10" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L11,4 z" fill="#d97706"/></marker></defs><style>svg{font-family:Arial,Helvetica,sans-serif}.card{filter:url(#shadow)}.label{letter-spacing:2px}</style><rect width="2400" height="1800" fill="url(#bg)"/><circle cx="250" cy="150" r="230" fill="#E0F2FE" opacity=".65"/><circle cx="2100" cy="210" r="330" fill="#F3E8FF" opacity=".62"/><circle cx="2020" cy="1180" r="390" fill="#FAE8FF" opacity=".35"/>
+<text x="1200.0" y="68" font-size="46" font-weight="800" fill="#0f172a" text-anchor="middle">GYM Multi-Branch Platform — Solution Architecture</text>
+<text x="1200.0" y="115" font-size="22" font-weight="400" fill="#64748b" text-anchor="middle">Spring Boot Modular Monolith · Keycloak OIDC · PostgreSQL · Redis · Object Storage · Transactional Outbox · Kafka later</text>
+<rect class="card" x="370" y="170" width="850" height="190" rx="26" fill="#F8FBFF" stroke="#bfdbfe" stroke-width="2"/>
+<text class="label" x="795" y="205" font-size="17" font-weight="800" fill="#2563eb" text-anchor="middle">WEB CLIENTS</text>
+<rect class="card" x="420" y="245" width="330" height="80" rx="16" fill="#fff" stroke="#d8e2ee" stroke-width="1.5"/>
+<g transform="translate(445,262)" fill="none" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="42" height="31.200000000000003" rx="6"/><line x1="3" y1="12.0" x2="45" y2="12.0"/><circle cx="13" cy="7.68" r="1.5"/><circle cx="22" cy="7.68" r="1.5"/></g>
+<text x="510" y="276" font-size="19" font-weight="800" fill="#2563eb" text-anchor="start">Admin Web</text>
+<text x="510" y="302" font-size="14" font-weight="400" fill="#243449" text-anchor="start">React + TypeScript</text>
+<rect class="card" x="820" y="245" width="330" height="80" rx="16" fill="#fff" stroke="#d8e2ee" stroke-width="1.5"/>
+<g transform="translate(845,262)" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="42" height="31.200000000000003" rx="6"/><line x1="3" y1="12.0" x2="45" y2="12.0"/><circle cx="13" cy="7.68" r="1.5"/><circle cx="22" cy="7.68" r="1.5"/></g>
+<text x="910" y="276" font-size="19" font-weight="800" fill="#7c3aed" text-anchor="start">Member Web</text>
+<text x="910" y="302" font-size="14" font-weight="400" fill="#243449" text-anchor="start">React + TypeScript</text>
+<rect class="card" x="1780" y="170" width="470" height="360" rx="26" fill="#FFFBFF" stroke="#d8b4fe" stroke-width="2"/>
+<text class="label" x="2015" y="205" font-size="17" font-weight="800" fill="#7c3aed" text-anchor="middle">IDENTITY PROVIDER</text>
+<rect class="card" x="1820" y="250" width="390" height="225" rx="20" fill="#fff" stroke="#e9d5ff" stroke-width="1.5"/>
+<g transform="translate(1855,285)" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M35.0 4 L63 15.4 C62 44.1 53.2 57.4 35.0 65 C16.8 57.4 8 44.1 7 15.4 Z"/><path d="M35.0 19.6 V39.2"/><circle cx="35.0" cy="47.6" r="3.5"/></g>
+<text x="1945" y="305" font-size="30" font-weight="800" fill="#7c3aed" text-anchor="start">Keycloak</text>
+<text x="1945" y="342" font-size="16" font-weight="400" fill="#243449" text-anchor="start">OIDC / OAuth2 IdP</text>
+<text x="1860" y="395" font-size="15" font-weight="800" fill="#7c3aed" text-anchor="start">✓</text>
+<text x="1885" y="395" font-size="15" font-weight="400" fill="#243449" text-anchor="start">Authentication / SSO</text>
+<text x="1860" y="420" font-size="15" font-weight="800" fill="#7c3aed" text-anchor="start">✓</text>
+<text x="1885" y="420" font-size="15" font-weight="400" fill="#243449" text-anchor="start">JWT + Refresh Token</text>
+<text x="1860" y="445" font-size="15" font-weight="800" fill="#7c3aed" text-anchor="start">✓</text>
+<text x="1885" y="445" font-size="15" font-weight="400" fill="#243449" text-anchor="start">MFA / Session</text>
+<text x="1860" y="470" font-size="15" font-weight="800" fill="#7c3aed" text-anchor="start">✓</text>
+<text x="1885" y="470" font-size="15" font-weight="400" fill="#243449" text-anchor="start">Admin + Member clients</text>
+<rect class="card" x="300" y="440" width="1280" height="760" rx="28" fill="#fff" stroke="#10b981" stroke-width="3"/>
+<g transform="translate(345,490)" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="62" height="20.160000000000004" rx="5"/><rect x="5" y="34.56" width="62" height="20.160000000000004" rx="5"/><circle cx="15.84" cy="15.84" r="2"/><circle cx="15.84" cy="44.64" r="2"/></g>
+<text x="435" y="518" font-size="31" font-weight="800" fill="#059669" text-anchor="start">SPRING BOOT MODULAR MONOLITH API</text>
+<text x="435" y="552" font-size="16" font-weight="400" fill="#64748b" text-anchor="start">OAuth2 Resource Server · Branch-scoped AuthZ · SOLID · Clean/Hexagonal · Native SQL + Flyway</text>
+<rect x="350" y="610" width="1180" height="420" rx="20" fill="#F8FAFC" stroke="#e2e8f0" stroke-width="1.5"/>
+<text x="940" y="650" font-size="17" font-weight="800" fill="#0f172a" text-anchor="middle">BUSINESS MODULES · CORE &amp; SUPPORTING</text>
+<rect x="395" y="690" width="205" height="48" rx="11" fill="#ECFDF5" stroke="#86EFAC" stroke-width="1.5"/>
+<circle cx="418" cy="714" r="12" fill="#059669" opacity=".15"/>
+<text x="443" y="711" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">identity</text>
+<text x="443" y="730" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">User / Role</text>
+<rect x="622" y="690" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="645" cy="714" r="12" fill="#64748b" opacity=".15"/>
+<text x="670" y="711" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">branch</text>
+<text x="670" y="730" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Chi nhánh</text>
+<rect x="849" y="690" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="872" cy="714" r="12" fill="#64748b" opacity=".15"/>
+<text x="897" y="711" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">staff</text>
+<text x="897" y="730" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Nhân sự</text>
+<rect x="1076" y="690" width="205" height="48" rx="11" fill="#ECFDF5" stroke="#86EFAC" stroke-width="1.5"/>
+<circle cx="1099" cy="714" r="12" fill="#059669" opacity=".15"/>
+<text x="1124" y="711" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">member</text>
+<text x="1124" y="730" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Hội viên</text>
+<rect x="1303" y="690" width="205" height="48" rx="11" fill="#ECFDF5" stroke="#86EFAC" stroke-width="1.5"/>
+<circle cx="1326" cy="714" r="12" fill="#059669" opacity=".15"/>
+<text x="1351" y="711" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">kyc</text>
+<text x="1351" y="730" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">CCCD / Student</text>
+<rect x="395" y="758" width="205" height="48" rx="11" fill="#ECFDF5" stroke="#86EFAC" stroke-width="1.5"/>
+<circle cx="418" cy="782" r="12" fill="#059669" opacity=".15"/>
+<text x="443" y="779" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">membership</text>
+<text x="443" y="798" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Gói tập</text>
+<rect x="622" y="758" width="205" height="48" rx="11" fill="#ECFDF5" stroke="#86EFAC" stroke-width="1.5"/>
+<circle cx="645" cy="782" r="12" fill="#059669" opacity=".15"/>
+<text x="670" y="779" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">contract</text>
+<text x="670" y="798" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Hợp đồng</text>
+<rect x="849" y="758" width="205" height="48" rx="11" fill="#ECFDF5" stroke="#86EFAC" stroke-width="1.5"/>
+<circle cx="872" cy="782" r="12" fill="#059669" opacity=".15"/>
+<text x="897" y="779" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">payment</text>
+<text x="897" y="798" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Thanh toán</text>
+<rect x="1076" y="758" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="1099" cy="782" r="12" fill="#64748b" opacity=".15"/>
+<text x="1124" y="779" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">finance</text>
+<text x="1124" y="798" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Trả góp</text>
+<rect x="1303" y="758" width="205" height="48" rx="11" fill="#ECFDF5" stroke="#86EFAC" stroke-width="1.5"/>
+<circle cx="1326" cy="782" r="12" fill="#059669" opacity=".15"/>
+<text x="1351" y="779" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">checkin</text>
+<text x="1351" y="798" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">QR check-in</text>
+<rect x="395" y="826" width="205" height="48" rx="11" fill="#ECFDF5" stroke="#86EFAC" stroke-width="1.5"/>
+<circle cx="418" cy="850" r="12" fill="#059669" opacity=".15"/>
+<text x="443" y="847" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">booking</text>
+<text x="443" y="866" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Booking Engine</text>
+<rect x="622" y="826" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="645" cy="850" r="12" fill="#64748b" opacity=".15"/>
+<text x="670" y="847" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">groupclass</text>
+<text x="670" y="866" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Lớp nhóm</text>
+<rect x="849" y="826" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="872" cy="850" r="12" fill="#64748b" opacity=".15"/>
+<text x="897" y="847" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">pt</text>
+<text x="897" y="866" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">PT 1-1</text>
+<rect x="1076" y="826" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="1099" cy="850" r="12" fill="#64748b" opacity=".15"/>
+<text x="1124" y="847" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">privateroom</text>
+<text x="1124" y="866" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Phòng riêng</text>
+<rect x="1303" y="826" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="1326" cy="850" r="12" fill="#64748b" opacity=".15"/>
+<text x="1351" y="847" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">massage</text>
+<text x="1351" y="866" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Massage</text>
+<rect x="395" y="894" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="418" cy="918" r="12" fill="#64748b" opacity=".15"/>
+<text x="443" y="915" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">inventory</text>
+<text x="443" y="934" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Kho hàng</text>
+<rect x="622" y="894" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="645" cy="918" r="12" fill="#64748b" opacity=".15"/>
+<text x="670" y="915" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">pantry</text>
+<text x="670" y="934" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Pantry</text>
+<rect x="849" y="894" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="872" cy="918" r="12" fill="#64748b" opacity=".15"/>
+<text x="897" y="915" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">equipment</text>
+<text x="897" y="934" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Thiết bị</text>
+<rect x="1076" y="894" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="1099" cy="918" r="12" fill="#64748b" opacity=".15"/>
+<text x="1124" y="915" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">crm</text>
+<text x="1124" y="934" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">CSKH</text>
+<rect x="1303" y="894" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="1326" cy="918" r="12" fill="#64748b" opacity=".15"/>
+<text x="1351" y="915" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">rating</text>
+<text x="1351" y="934" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Đánh giá</text>
+<rect x="395" y="962" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="418" cy="986" r="12" fill="#64748b" opacity=".15"/>
+<text x="443" y="983" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">promotion</text>
+<text x="443" y="1002" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Khuyến mãi</text>
+<rect x="622" y="962" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="645" cy="986" r="12" fill="#64748b" opacity=".15"/>
+<text x="670" y="983" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">notification</text>
+<text x="670" y="1002" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Thông báo</text>
+<rect x="849" y="962" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="872" cy="986" r="12" fill="#64748b" opacity=".15"/>
+<text x="897" y="983" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">report</text>
+<text x="897" y="1002" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Báo cáo</text>
+<rect x="1076" y="962" width="205" height="48" rx="11" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+<circle cx="1099" cy="986" r="12" fill="#64748b" opacity=".15"/>
+<text x="1124" y="983" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">audit</text>
+<text x="1124" y="1002" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Audit log</text>
+<rect x="1303" y="962" width="205" height="48" rx="11" fill="#FFFBEB" stroke="#FCD34D" stroke-width="1.5"/>
+<circle cx="1326" cy="986" r="12" fill="#d97706" opacity=".15"/>
+<text x="1351" y="983" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">shared</text>
+<text x="1351" y="1002" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Shared Kernel</text>
+<rect x="540" y="1052" width="800" height="45" rx="14" fill="#fff" stroke="#e2e8f0" stroke-width="1"/>
+<rect x="575" y="1067" width="16" height="16" rx="3" fill="#ECFDF5" stroke="#86EFAC"/>
+<text x="603" y="1081" font-size="13" font-weight="400" fill="#64748b" text-anchor="start">Core / strong consistency</text>
+<rect x="835" y="1067" width="16" height="16" rx="3" fill="#fff" stroke="#CBD5E1"/>
+<text x="863" y="1081" font-size="13" font-weight="400" fill="#64748b" text-anchor="start">Supporting</text>
+<rect x="1025" y="1067" width="16" height="16" rx="3" fill="#FFFBEB" stroke="#FCD34D"/>
+<text x="1053" y="1081" font-size="13" font-weight="400" fill="#64748b" text-anchor="start">Shared kernel</text>
+<rect x="350" y="1120" width="1180" height="60" rx="16" fill="#F8FAFC" stroke="#e2e8f0" stroke-width="1.5"/>
+<circle cx="430" cy="1150" r="15" fill="#EFF6FF" stroke="#64748b" stroke-width="1.5"/>
+<text x="430" y="1156" font-size="15" font-weight="800" fill="#0f172a" text-anchor="middle">✓</text>
+<text x="460" y="1142" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">Security</text>
+<text x="460" y="1162" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">JWT / RBAC</text>
+<circle cx="650" cy="1150" r="15" fill="#EFF6FF" stroke="#64748b" stroke-width="1.5"/>
+<text x="650" y="1156" font-size="15" font-weight="800" fill="#0f172a" text-anchor="middle">✓</text>
+<text x="680" y="1142" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">Validation</text>
+<text x="680" y="1162" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Business rules</text>
+<circle cx="870" cy="1150" r="15" fill="#EFF6FF" stroke="#64748b" stroke-width="1.5"/>
+<text x="870" y="1156" font-size="15" font-weight="800" fill="#0f172a" text-anchor="middle">✓</text>
+<text x="900" y="1142" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">Exception</text>
+<text x="900" y="1162" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Global handler</text>
+<circle cx="1090" cy="1150" r="15" fill="#EFF6FF" stroke="#64748b" stroke-width="1.5"/>
+<text x="1090" y="1156" font-size="15" font-weight="800" fill="#0f172a" text-anchor="middle">✓</text>
+<text x="1120" y="1142" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">Logging</text>
+<text x="1120" y="1162" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Structured logs</text>
+<circle cx="1310" cy="1150" r="15" fill="#EFF6FF" stroke="#64748b" stroke-width="1.5"/>
+<text x="1310" y="1156" font-size="15" font-weight="800" fill="#0f172a" text-anchor="middle">✓</text>
+<text x="1340" y="1142" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">Idempotency</text>
+<text x="1340" y="1162" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Request safe</text>
+<rect class="card" x="1770" y="690" width="460" height="300" rx="24" fill="#fff" stroke="#d8b4fe" stroke-width="2"/>
+<text x="1810" y="735" font-size="21" font-weight="800" fill="#7c3aed" text-anchor="start">AUTHORIZATION NOTE</text>
+<text x="1810" y="775" font-size="16" fill="#243449"><tspan x="1810">Authorization is handled inside</tspan><tspan x="1810" dy="24">the internal identity module.</tspan><tspan x="1810" dy="24">It checks:</tspan></text>
+<text x="1830" y="875" font-size="17" font-weight="800" fill="#7c3aed" text-anchor="start">•</text>
+<text x="1855" y="875" font-size="16" font-weight="400" fill="#243449" text-anchor="start">Role</text>
+<text x="1830" y="903" font-size="17" font-weight="800" fill="#7c3aed" text-anchor="start">•</text>
+<text x="1855" y="903" font-size="16" font-weight="400" fill="#243449" text-anchor="start">Branch scope</text>
+<text x="1830" y="931" font-size="17" font-weight="800" fill="#7c3aed" text-anchor="start">•</text>
+<text x="1855" y="931" font-size="16" font-weight="400" fill="#243449" text-anchor="start">Ownership</text>
+<text x="1830" y="959" font-size="17" font-weight="800" fill="#7c3aed" text-anchor="start">•</text>
+<text x="1855" y="959" font-size="16" font-weight="400" fill="#243449" text-anchor="start">Fine-grained permission</text>
+<rect class="card" x="60" y="500" width="210" height="470" rx="24" fill="#F0FDFA" stroke="#99F6E4" stroke-width="2"/>
+<text class="label" x="165" y="535" font-size="15" font-weight="800" fill="#0d9488" text-anchor="middle">OBSERVABILITY</text>
+<rect class="card" x="85" y="575" width="160" height="68" rx="14" fill="#fff" stroke="#d8e2ee" stroke-width="1.2"/>
+<circle cx="122.0" cy="609.0" r="11.333333333333334" fill="#dc2626" opacity=".16" stroke="#dc2626" stroke-width="2"/>
+<text x="150" y="603" font-size="13" font-weight="800" fill="#dc2626" text-anchor="start">Prometheus</text>
+<text x="150" y="623" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Metrics</text>
+<rect class="card" x="85" y="667" width="160" height="68" rx="14" fill="#fff" stroke="#d8e2ee" stroke-width="1.2"/>
+<circle cx="122.0" cy="701.0" r="11.333333333333334" fill="#f97316" opacity=".16" stroke="#f97316" stroke-width="2"/>
+<text x="150" y="695" font-size="13" font-weight="800" fill="#f97316" text-anchor="start">Grafana</text>
+<text x="150" y="715" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Dashboards</text>
+<rect class="card" x="85" y="759" width="160" height="68" rx="14" fill="#fff" stroke="#d8e2ee" stroke-width="1.2"/>
+<circle cx="122.0" cy="793.0" r="11.333333333333334" fill="#2563eb" opacity=".16" stroke="#2563eb" stroke-width="2"/>
+<text x="150" y="787" font-size="13" font-weight="800" fill="#2563eb" text-anchor="start">Zipkin</text>
+<text x="150" y="807" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Tracing</text>
+<rect class="card" x="85" y="851" width="160" height="68" rx="14" fill="#fff" stroke="#d8e2ee" stroke-width="1.2"/>
+<circle cx="122.0" cy="885.0" r="11.333333333333334" fill="#059669" opacity=".16" stroke="#059669" stroke-width="2"/>
+<text x="150" y="879" font-size="13" font-weight="800" fill="#059669" text-anchor="start">Loki / ELK</text>
+<text x="150" y="899" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Logs later</text>
+<rect class="card" x="80" y="1290" width="1040" height="300" rx="24" fill="#F8FBFF" stroke="#bfdbfe" stroke-width="2"/>
+<text class="label" x="600" y="1330" font-size="17" font-weight="800" fill="#2563eb" text-anchor="middle">DATA STORES &amp; RUNTIME SUPPORT</text>
+<rect class="card" x="125" y="1370" width="290" height="170" rx="16" fill="#fff" stroke="#d8e2ee" stroke-width="1.2"/>
+<g transform="translate(147,1395)" fill="none" stroke="#0284c7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="26.0" cy="11.44" rx="18.72" ry="7.280000000000001"/><path d="M7.280000000000001 11.44 V40.56 C7.280000000000001 46.800000000000004 44.72 46.800000000000004 44.72 40.56 V11.44"/><path d="M7.280000000000001 26.0 C7.280000000000001 32.24 44.72 32.24 44.72 26.0"/></g>
+<text x="215" y="1408" font-size="20" font-weight="800" fill="#0284c7" text-anchor="start">PostgreSQL</text>
+<text x="215" y="1435" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">Source of Truth</text>
+<text x="155" y="1470" font-size="12" font-weight="800" fill="#0284c7" text-anchor="start">•</text>
+<text x="173" y="1470" font-size="12" font-weight="400" fill="#243449" text-anchor="start">Business tables</text>
+<text x="155" y="1491" font-size="12" font-weight="800" fill="#0284c7" text-anchor="start">•</text>
+<text x="173" y="1491" font-size="12" font-weight="400" fill="#243449" text-anchor="start">Constraints &amp; indexes</text>
+<text x="155" y="1512" font-size="12" font-weight="800" fill="#0284c7" text-anchor="start">•</text>
+<text x="173" y="1512" font-size="12" font-weight="400" fill="#243449" text-anchor="start">ACID transactions</text>
+<text x="155" y="1533" font-size="12" font-weight="800" fill="#0284c7" text-anchor="start">•</text>
+<text x="173" y="1533" font-size="12" font-weight="400" fill="#243449" text-anchor="start">Atomic SQL</text>
+<rect class="card" x="445" y="1370" width="290" height="170" rx="16" fill="#fff" stroke="#d8e2ee" stroke-width="1.2"/>
+<g transform="translate(467,1395)" fill="none" stroke="#dc2626" stroke-width="3" stroke-linejoin="round"><path d="M26.0 7 L47 14.560000000000002 L26.0 24.96 L5 14.560000000000002 Z" fill="#dc2626" opacity=".14"/><path d="M5 23.400000000000002 L26.0 33.800000000000004 L47 23.400000000000002"/><path d="M5 32.76 L26.0 43.68 L47 32.76"/><path d="M5 14.560000000000002 L26.0 24.96 L47 14.560000000000002"/></g>
+<text x="535" y="1408" font-size="20" font-weight="800" fill="#dc2626" text-anchor="start">Redis</text>
+<text x="535" y="1435" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">Cache &amp; Short Locks</text>
+<text x="475" y="1470" font-size="12" font-weight="800" fill="#dc2626" text-anchor="start">•</text>
+<text x="493" y="1470" font-size="12" font-weight="400" fill="#243449" text-anchor="start">QR token TTL</text>
+<text x="475" y="1491" font-size="12" font-weight="800" fill="#dc2626" text-anchor="start">•</text>
+<text x="493" y="1491" font-size="12" font-weight="400" fill="#243449" text-anchor="start">One-time nonce</text>
+<text x="475" y="1512" font-size="12" font-weight="800" fill="#dc2626" text-anchor="start">•</text>
+<text x="493" y="1512" font-size="12" font-weight="400" fill="#243449" text-anchor="start">Duplicate scan lock</text>
+<text x="475" y="1533" font-size="12" font-weight="800" fill="#dc2626" text-anchor="start">•</text>
+<text x="493" y="1533" font-size="12" font-weight="400" fill="#243449" text-anchor="start">Rate limiting</text>
+<rect class="card" x="765" y="1370" width="290" height="170" rx="16" fill="#fff" stroke="#d8e2ee" stroke-width="1.2"/>
+<g transform="translate(787,1395)" fill="none" stroke="#f97316" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="26.0" cy="11.96" rx="17.68" ry="5.2"/><path d="M9.36 13.0 L15.6 45.76 H36.4 L42.64 13.0"/><path d="M13.0 9.36 C15.6 3 36.4 3 39.0 9.36"/></g>
+<text x="855" y="1408" font-size="20" font-weight="800" fill="#f97316" text-anchor="start">Object Storage</text>
+<text x="855" y="1435" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">S3 compatible</text>
+<text x="795" y="1470" font-size="12" font-weight="800" fill="#f97316" text-anchor="start">•</text>
+<text x="813" y="1470" font-size="12" font-weight="400" fill="#243449" text-anchor="start">CCCD / Student card</text>
+<text x="795" y="1491" font-size="12" font-weight="800" fill="#f97316" text-anchor="start">•</text>
+<text x="813" y="1491" font-size="12" font-weight="400" fill="#243449" text-anchor="start">Contract PDF</text>
+<text x="795" y="1512" font-size="12" font-weight="800" fill="#f97316" text-anchor="start">•</text>
+<text x="813" y="1512" font-size="12" font-weight="400" fill="#243449" text-anchor="start">Invoice / Receipt</text>
+<text x="795" y="1533" font-size="12" font-weight="800" fill="#f97316" text-anchor="start">•</text>
+<text x="813" y="1533" font-size="12" font-weight="400" fill="#243449" text-anchor="start">Equipment / Product images</text>
+<rect class="card" x="1220" y="1290" width="1000" height="300" rx="24" fill="#FDF4FF" stroke="#e9d5ff" stroke-width="2"/>
+<text class="label" x="1720" y="1330" font-size="17" font-weight="800" fill="#7c3aed" text-anchor="middle">MESSAGING / ASYNC EVENTS</text>
+<rect class="card" x="1280" y="1380" width="300" height="85" rx="16" fill="#fff" stroke="#e9d5ff" stroke-width="1.2"/>
+<g transform="translate(1305,1400)" fill="none" stroke="#7c3aed" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="22.5" cy="9.9" rx="16.2" ry="6.300000000000001"/><path d="M6.300000000000001 9.9 V35.1 C6.300000000000001 40.5 38.7 40.5 38.7 35.1 V9.9"/><path d="M6.300000000000001 22.5 C6.300000000000001 27.9 38.7 27.9 38.7 22.5"/></g>
+<text x="1368" y="1408" font-size="17" font-weight="800" fill="#7c3aed" text-anchor="start">Transactional Outbox</text>
+<text x="1368" y="1432" font-size="12" font-weight="400" fill="#243449" text-anchor="start">outbox_event table</text>
+<text x="1368" y="1450" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">same DB transaction</text>
+<rect class="card" x="1770" y="1380" width="300" height="85" rx="16" fill="#fff" stroke="#e9d5ff" stroke-width="1.2"/>
+<circle cx="1800" cy="1422" r="23" fill="#F5F3FF" stroke="#7c3aed" stroke-width="2"/>
+<text x="1800" y="1429" font-size="18" font-weight="800" fill="#7c3aed" text-anchor="middle">R</text>
+<text x="1845" y="1408" font-size="17" font-weight="800" fill="#7c3aed" text-anchor="start">Outbox Relay</text>
+<text x="1845" y="1432" font-size="12" font-weight="400" fill="#243449" text-anchor="start">Polling first</text>
+<text x="1845" y="1450" font-size="10" font-weight="400" fill="#64748b" text-anchor="start">Debezium CDC later</text>
+<rect class="card" x="1460" y="1500" width="450" height="70" rx="16" fill="#111827" stroke="#111827" stroke-width="1.2"/>
+<g transform="translate(1488,1514)" fill="#fff" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21.0 6 L36 34 H6 Z"/><circle cx="21.0" cy="6" r="5"/><circle cx="36" cy="34" r="5"/><circle cx="6" cy="34" r="5"/><circle cx="21.0" cy="24.36" r="4" fill="#f59e0b"/></g>
+<text x="1550" y="1525" font-size="18" font-weight="800" fill="#fff" text-anchor="start">Kafka later</text>
+<text x="1550" y="1550" font-size="12" font-weight="400" fill="#cbd5e1" text-anchor="start">Async backbone: notification, audit, report, CRM</text>
+<rect x="80" y="1640" width="2140" height="75" rx="18" fill="#fff" stroke="#bfdbfe" stroke-width="1.5"/>
+<circle cx="160" cy="1680" r="17" fill="#EFF6FF" stroke="#2563eb" stroke-width="1.5"/>
+<text x="160" y="1686" font-size="14" font-weight="800" fill="#2563eb" text-anchor="middle">1</text>
+<text x="194" y="1670" font-size="15" font-weight="800" fill="#2563eb" text-anchor="start">Docker / Compose</text>
+<text x="194" y="1693" font-size="11" font-weight="400" fill="#64748b" text-anchor="start">Local development</text>
+<circle cx="570" cy="1680" r="17" fill="#EFF6FF" stroke="#2563eb" stroke-width="1.5"/>
+<text x="570" y="1686" font-size="14" font-weight="800" fill="#2563eb" text-anchor="middle">2</text>
+<text x="604" y="1670" font-size="15" font-weight="800" fill="#2563eb" text-anchor="start">CI/CD</text>
+<text x="604" y="1693" font-size="11" font-weight="400" fill="#64748b" text-anchor="start">Build · test · deploy</text>
+<circle cx="980" cy="1680" r="17" fill="#EFF6FF" stroke="#2563eb" stroke-width="1.5"/>
+<text x="980" y="1686" font-size="14" font-weight="800" fill="#2563eb" text-anchor="middle">3</text>
+<text x="1014" y="1670" font-size="15" font-weight="800" fill="#2563eb" text-anchor="start">Config</text>
+<text x="1014" y="1693" font-size="11" font-weight="400" fill="#64748b" text-anchor="start">Env · secrets</text>
+<circle cx="1390" cy="1680" r="17" fill="#EFF6FF" stroke="#2563eb" stroke-width="1.5"/>
+<text x="1390" y="1686" font-size="14" font-weight="800" fill="#2563eb" text-anchor="middle">4</text>
+<text x="1424" y="1670" font-size="15" font-weight="800" fill="#2563eb" text-anchor="start">Monitoring</text>
+<text x="1424" y="1693" font-size="11" font-weight="400" fill="#64748b" text-anchor="start">Alerting</text>
+<circle cx="1800" cy="1680" r="17" fill="#EFF6FF" stroke="#2563eb" stroke-width="1.5"/>
+<text x="1800" y="1686" font-size="14" font-weight="800" fill="#2563eb" text-anchor="middle">5</text>
+<text x="1834" y="1670" font-size="15" font-weight="800" fill="#2563eb" text-anchor="start">Backup</text>
+<text x="1834" y="1693" font-size="11" font-weight="400" fill="#64748b" text-anchor="start">PostgreSQL backup</text>
+<line x1="1220" y1="265" x2="1780" y2="265" stroke="#64748b" stroke-width="2.5" marker-end="url(#m_64748b)"/>
+<text x="1410" y="240" font-size="14" font-weight="400" fill="#243449" text-anchor="start">OIDC + PKCE login</text>
+<line x1="795" y1="360" x2="795" y2="440" stroke="#64748b" stroke-width="2.5" marker-end="url(#m_64748b)"/>
+<text x="815" y="405" font-size="12" font-weight="500" fill="#64748b" text-anchor="start">Bearer JWT</text>
+<line x1="1780" y1="530" x2="1580" y2="650" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#m_7c3aed)" stroke-dasharray="10 8"/>
+<text x="1610" y="575" font-size="12" font-weight="500" fill="#7c3aed" text-anchor="start">Validate JWT (JWKS)</text>
+<line x1="270" y1="620" x2="300" y2="620" stroke="#0d9488" stroke-width="2.2" marker-end="url(#m_0d9488)" stroke-dasharray="10 8"/>
+<text x="280" y="598" font-size="10" font-weight="500" fill="#0d9488" text-anchor="start">metrics</text>
+<line x1="270" y1="710" x2="300" y2="710" stroke="#0d9488" stroke-width="2.2" marker-end="url(#m_0d9488)" stroke-dasharray="10 8"/>
+<text x="282" y="688" font-size="10" font-weight="500" fill="#0d9488" text-anchor="start">traces</text>
+<line x1="300" y1="800" x2="270" y2="800" stroke="#0d9488" stroke-width="2.2" marker-end="url(#m_0d9488)" stroke-dasharray="10 8"/>
+<text x="283" y="778" font-size="10" font-weight="500" fill="#0d9488" text-anchor="start">logs</text>
+<line x1="570" y1="1200" x2="260" y2="1370" stroke="#64748b" stroke-width="2.5" marker-end="url(#m_64748b)"/>
+<text x="275" y="1235" font-size="12" font-weight="400" fill="#243449" text-anchor="start">Read / Write</text>
+<line x1="760" y1="1200" x2="590" y2="1370" stroke="#64748b" stroke-width="2.5" marker-end="url(#m_64748b)"/>
+<text x="610" y="1235" font-size="12" font-weight="400" fill="#243449" text-anchor="start">Cache / Lock</text>
+<line x1="940" y1="1200" x2="910" y2="1370" stroke="#64748b" stroke-width="2.5" marker-end="url(#m_64748b)"/>
+<text x="955" y="1235" font-size="12" font-weight="400" fill="#243449" text-anchor="start">Upload / Download</text>
+<line x1="1270" y1="1200" x2="1360" y2="1380" stroke="#64748b" stroke-width="2.5" marker-end="url(#m_64748b)"/>
+<text x="1300" y="1235" font-size="12" font-weight="400" fill="#243449" text-anchor="start">Write outbox_event</text>
+<line x1="1580" y1="1422" x2="1770" y2="1422" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#m_7c3aed)"/>
+<line x1="1920" y1="1465" x2="1740" y2="1500" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#m_7c3aed)"/>
+<text x="1150" y="1765" font-size="14" font-weight="500" fill="#64748b" text-anchor="middle">One deployable backend. Keycloak, Redis, PostgreSQL, Object Storage and Kafka are supporting infrastructure, not microservices.</text>
+</svg>

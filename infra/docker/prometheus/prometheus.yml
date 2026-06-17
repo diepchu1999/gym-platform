@@ -1,0 +1,17 @@
+# Prometheus scrape config cho dev local.
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  # Prometheus tự giám sát chính nó
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # App Spring Boot chạy trên HOST (cổng 8080) - Micrometer/Actuator expose /actuator/prometheus.
+  # host.docker.internal trỏ về host (đã khai báo extra_hosts trong compose).
+  - job_name: gym-platform-api
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["host.docker.internal:8080"]

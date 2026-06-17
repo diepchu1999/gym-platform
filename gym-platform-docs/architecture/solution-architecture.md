@@ -3,182 +3,140 @@
 > Bilingual document. Each section: **EN** first, **VI** below.
 > Tài liệu song ngữ. Mỗi mục: **EN** trước, **VI** bên dưới.
 >
-> Status: PROPOSED — pending owner approval. / Trạng thái: ĐỀ XUẤT — chờ owner duyệt.
+> Canonical diagram / Sơ đồ chuẩn: [`diagrams/solution_architecture.svg`](diagrams/solution_architecture.svg)
+> Status: PROPOSED — aligned to the owner's architecture diagram. / Trạng thái: ĐỀ XUẤT — đã khớp sơ đồ của owner.
 
 ## 1. Purpose / Mục đích
 
-**EN —** This document describes the target technical architecture of the gym-platform after adopting four infrastructure decisions: **Keycloak** (authentication / identity provider), **Apache Kafka** (asynchronous event backbone), **Prometheus + Grafana** (metrics & dashboards), and **Zipkin** (distributed tracing). The system stays a **Modular Monolith**; these are *supporting infrastructure*, not a move to microservices.
+**EN —** Target technical architecture of the gym-platform. It stays a **Spring Boot Modular Monolith** (one deployable backend). Supporting infrastructure: **Keycloak** (authentication/OIDC), **PostgreSQL** (source of truth), **Redis** (cache + short-lived locks), **Object Storage** (S3-compatible, documents/images), a **Transactional Outbox** (now), and **Kafka** as an async backbone (**later**). Observability via **Prometheus + Grafana** and **Zipkin** (+ Loki/ELK for logs later). None of these are microservices.
 
-**VI —** Tài liệu mô tả kiến trúc kỹ thuật mục tiêu của gym-platform sau khi áp dụng 4 quyết định hạ tầng: **Keycloak** (xác thực / nhà cung cấp định danh), **Apache Kafka** (xương sống sự kiện bất đồng bộ), **Prometheus + Grafana** (chỉ số & dashboard), và **Zipkin** (tracing phân tán). Hệ thống **vẫn là Modular Monolith**; đây là *hạ tầng hỗ trợ*, không phải chuyển sang microservices.
+**VI —** Kiến trúc kỹ thuật mục tiêu của gym-platform. Vẫn là **Spring Boot Modular Monolith** (một backend triển khai). Hạ tầng hỗ trợ: **Keycloak** (xác thực/OIDC), **PostgreSQL** (nguồn sự thật), **Redis** (cache + lock ngắn hạn), **Object Storage** (tương thích S3, tài liệu/ảnh), **Transactional Outbox** (dùng ngay), và **Kafka** làm xương sống bất đồng bộ (**triển khai sau**). Quan sát qua **Prometheus + Grafana** và **Zipkin** (+ Loki/ELK cho log sau này). Không có cái nào là microservices.
 
 ## 2. Architecture principles / Nguyên tắc kiến trúc
 
 **EN —**
-- Modular Monolith first: one deployable Spring Boot app, modules under `com.gym.*` (see `modular-monolith.md`).
-- Strong consistency for core flows (payment, contract, booking, check-in, quota, stock) stays **in-process + PostgreSQL transactions + atomic SQL / constraints**. Kafka is NOT in the race-condition critical path.
-- Async side-effects (notification, audit stream, CRM follow-up, reporting projections) are decoupled via Kafka using the **Transactional Outbox** pattern.
-- Authentication is delegated to Keycloak (OIDC/OAuth2). Fine-grained, **branch-scoped authorization stays in the app**.
-- Everything observable: metrics (Prometheus), traces (Zipkin), correlated logs.
+- Modular Monolith first: one deployable Spring Boot app, modules under `com.gym.*`.
+- Core flows (payment, contract, booking, check-in, quota, stock) keep **strong consistency** via **PostgreSQL transactions + atomic SQL / constraints**.
+- **Authentication** is delegated to Keycloak. **Branch-scoped authorization stays inside the internal `identity` module** (role · branch scope · ownership · fine-grained permission).
+- **Redis** handles ephemeral, performance-critical concerns (QR token TTL, one-time nonce, duplicate-scan lock, rate limiting). **Durable uniqueness stays in PostgreSQL** (e.g. 1 trial/CCCD, payment txn id).
+- **Object Storage** holds binary documents; the DB stores only the **object key/URL**.
+- Async side-effects are captured **now** via a **Transactional Outbox**; **Kafka** delivery is added **later** without breaking the seam.
 
 **VI —**
-- Modular Monolith trước: một app Spring Boot triển khai duy nhất, module dưới `com.gym.*` (xem `modular-monolith.md`).
-- Nhất quán mạnh cho luồng lõi (thanh toán, hợp đồng, booking, check-in, quota, kho) vẫn xử lý **in-process + transaction PostgreSQL + atomic SQL / constraint**. Kafka **không** nằm trong đường găng chống race condition.
-- Tác vụ phụ bất đồng bộ (notification, luồng audit, CSKH follow-up, projection báo cáo) được tách rời qua Kafka theo mẫu **Transactional Outbox**.
-- Xác thực giao cho Keycloak (OIDC/OAuth2). Phân quyền hạt mịn **theo chi nhánh vẫn nằm trong app**.
-- Mọi thứ quan sát được: metrics (Prometheus), trace (Zipkin), log có tương quan.
+- Modular Monolith trước: một app Spring Boot, module dưới `com.gym.*`.
+- Luồng lõi (thanh toán, hợp đồng, booking, check-in, quota, kho) giữ **nhất quán mạnh** bằng **transaction PostgreSQL + atomic SQL / constraint**.
+- **Xác thực** giao cho Keycloak. **Phân quyền theo chi nhánh nằm trong module `identity` nội bộ** (role · phạm vi chi nhánh · quyền sở hữu · quyền hạt mịn).
+- **Redis** lo phần ephemeral, nhạy hiệu năng (QR token TTL, nonce một lần, lock chống quét trùng, rate limit). **Uniqueness bền vững vẫn ở PostgreSQL** (vd 1 trial/CCCD, payment txn id).
+- **Object Storage** chứa tài liệu nhị phân; DB chỉ lưu **object key/URL**.
+- Tác vụ phụ async được **ghi nhận ngay** qua **Transactional Outbox**; phần phát đi bằng **Kafka** thêm vào **sau** mà không phá vỡ điểm nối.
 
 ## 3. High-level context / Bối cảnh tổng thể
 
 ```mermaid
 flowchart TB
-    subgraph Clients["Web Clients / Trình duyệt"]
+    subgraph Clients["Web Clients"]
       ADMIN["Admin Web (React+TS)"]
       MEMBER["Member Web (React+TS)"]
     end
-
     KC["Keycloak<br/>OIDC/OAuth2 IdP"]
-    API["Spring Boot Modular Monolith<br/>(OAuth2 Resource Server)"]
-    PG[("PostgreSQL<br/>source of truth + outbox")]
-    KAFKA["Apache Kafka<br/>event backbone"]
-
-    subgraph Consumers["Async consumers (in-monolith @KafkaListener)"]
-      NOTI["Notification"]
-      AUDIT["Audit stream"]
-      CRMC["CRM follow-up"]
-      REPT["Reporting projections"]
-    end
-
-    subgraph Obs["Observability / Quan sát"]
+    API["Spring Boot Modular Monolith<br/>(Resource Server · branch-scoped AuthZ)"]
+    PG[("PostgreSQL<br/>source of truth + outbox_event")]
+    REDIS[("Redis<br/>cache + short locks")]
+    OBJ[("Object Storage<br/>S3-compatible")]
+    RELAY["Outbox Relay (later)<br/>polling → Debezium"]
+    KAFKA["Kafka (later)<br/>async backbone"]
+    subgraph Obs["Observability"]
       PROM["Prometheus"]
       GRAF["Grafana"]
       ZIP["Zipkin"]
+      LOKI["Loki / ELK (later)"]
     end
 
-    ADMIN -->|login redirect| KC
-    MEMBER -->|login redirect| KC
-    ADMIN -->|Bearer JWT| API
-    MEMBER -->|Bearer JWT| API
+    ADMIN & MEMBER -->|OIDC + PKCE login| KC
+    ADMIN & MEMBER -->|Bearer JWT| API
     API -->|validate JWT / JWKS| KC
-    API --> PG
-    API -->|outbox relay| KAFKA
-    KAFKA --> NOTI & AUDIT & CRMC & REPT
-    API -->|/actuator/prometheus| PROM
-    PROM --> GRAF
+    API -->|read/write · atomic SQL| PG
+    API -->|cache / lock| REDIS
+    API -->|upload/download| OBJ
+    API -.->|write outbox_event same TX| PG
+    PG -.-> RELAY -.-> KAFKA
+    API -->|/actuator/prometheus| PROM --> GRAF
     API -->|spans| ZIP
+    API -.-> LOKI
 ```
-
-**EN —** Browsers authenticate against Keycloak and call the API with a Bearer JWT. The API validates the token via Keycloak's JWKS, executes business logic against PostgreSQL, and writes integration events to an outbox table; a relay publishes them to Kafka where async consumers react. Metrics are scraped by Prometheus and visualized in Grafana; traces are exported to Zipkin.
-
-**VI —** Trình duyệt xác thực với Keycloak rồi gọi API kèm Bearer JWT. API kiểm tra token qua JWKS của Keycloak, chạy nghiệp vụ trên PostgreSQL, và ghi sự kiện tích hợp vào bảng outbox; một relay publish chúng lên Kafka để các consumer bất đồng bộ xử lý. Prometheus thu thập metrics và Grafana hiển thị; trace được xuất sang Zipkin.
 
 ## 4. Logical components / Thành phần luận lý
 
-| Component / Thành phần | Responsibility (EN) | Trách nhiệm (VI) |
-|---|---|---|
-| Admin/Member Web | React+TS SPA, OIDC login via Keycloak (PKCE) | SPA React+TS, đăng nhập OIDC qua Keycloak (PKCE) |
-| Keycloak | AuthN, token issuance, password policy, MFA, sessions | Xác thực, cấp token, chính sách mật khẩu, MFA, phiên |
-| API Monolith | Business modules `com.gym.*`, OAuth2 resource server, branch-scoped authZ | Module nghiệp vụ `com.gym.*`, resource server OAuth2, phân quyền theo chi nhánh |
-| PostgreSQL | Source of truth + transactional outbox | Nguồn sự thật + outbox giao dịch |
-| Kafka | Async event transport, decoupling, future extraction | Vận chuyển sự kiện async, giảm phụ thuộc, sẵn cho tách service |
-| Prometheus | Scrape & store metrics from `/actuator/prometheus` | Thu thập & lưu metrics từ `/actuator/prometheus` |
-| Grafana | Dashboards, alerts on metrics | Dashboard, cảnh báo trên metrics |
-| Zipkin | Collect & query distributed traces | Thu thập & tra cứu trace phân tán |
+| Component | Responsibility (EN) | Trách nhiệm (VI) | Now/Later |
+|---|---|---|---|
+| Admin/Member Web | React+TS SPA, OIDC login (PKCE) | SPA React+TS, đăng nhập OIDC (PKCE) | now |
+| Keycloak | AuthN, tokens, MFA, sessions | Xác thực, token, MFA, phiên | now |
+| API Monolith | Business modules, resource server, branch-scoped authZ | Module nghiệp vụ, resource server, phân quyền theo chi nhánh | now |
+| PostgreSQL | Source of truth + `outbox_event` | Nguồn sự thật + `outbox_event` | now |
+| Redis | Cache + short locks (QR TTL, nonce, dup-scan, rate limit) | Cache + lock ngắn (QR TTL, nonce, chống quét trùng, rate limit) | now |
+| Object Storage (S3) | CCCD/student images, contract PDF, invoices, media | Ảnh CCCD/thẻ SV, contract PDF, hóa đơn, media | now |
+| Transactional Outbox | Capture domain events in the business TX | Ghi domain event trong cùng TX nghiệp vụ | now |
+| Outbox Relay + Kafka | Publish + async backbone (notification, audit, report, CRM) | Phát đi + xương sống async | **later** |
+| Prometheus / Grafana | Metrics + dashboards/alerts | Metrics + dashboard/cảnh báo | now |
+| Zipkin | Distributed tracing | Tracing phân tán | now |
+| Loki / ELK | Centralized logs | Log tập trung | **later** |
 
 ## 5. Authentication & Authorization / Xác thực & Phân quyền
 
-**EN —** **Keycloak owns authentication; the app owns branch-scoped authorization (hybrid).**
-- Keycloak realm `gym-platform`. Clients: `gym-admin-web`, `gym-member-web` (public + PKCE), and the API as an OAuth2 **resource server** validating JWT (`issuer-uri`, JWKS).
-- Keycloak carries coarse identity + high-level realm roles (e.g. `STAFF`, `MEMBER`). It does **not** model "Branch Manager at branch X only" — realm roles cannot express per-branch scope cleanly.
-- The app maps the JWT `sub` (stable Keycloak user id) to an internal principal, then loads **fine-grained, branch-scoped permissions** from the `rbac_*` + `staff_branch_assignment` tables. Authorization decisions (e.g. `MEMBER_VIEW_FULL_CCCD`, `RATING_VIEW_AUTHOR`, branch access) are enforced in the application layer.
-- The app DB no longer stores passwords. `identity_user_account` becomes a thin mapping: internal id ↔ `keycloak_user_id` (UUID) + `account_type` (STAFF/MEMBER) + mirrored status. (See §9 impact on P1.)
+**EN —** **Keycloak = authentication; the app = authorization (confirmed by the architecture diagram).**
+- Realm `gym-platform`; clients `gym-admin-web`, `gym-member-web` (public + PKCE); API = OAuth2 **resource server** validating JWT via JWKS.
+- The app maps JWT `sub` → internal principal, then the **`identity` module** enforces: **Role · Branch scope · Ownership · Fine-grained permission** using `rbac_*` + `staff_branch_assignment`.
+- No passwords in the app DB; `identity_user_account` maps internal id ↔ `keycloak_user_id`. (See `data-model/p1-identity-org.md`.)
 
-**VI —** **Keycloak lo xác thực; app lo phân quyền theo chi nhánh (hybrid).**
-- Realm Keycloak `gym-platform`. Client: `gym-admin-web`, `gym-member-web` (public + PKCE), và API là **resource server** OAuth2 kiểm tra JWT (`issuer-uri`, JWKS).
-- Keycloak mang định danh thô + realm role cấp cao (vd `STAFF`, `MEMBER`). Nó **không** mô hình hóa "Branch Manager chỉ ở chi nhánh X" — realm role không biểu diễn gọn scope theo chi nhánh.
-- App ánh xạ `sub` trong JWT (id người dùng Keycloak ổn định) sang principal nội bộ, rồi nạp **quyền hạt mịn theo chi nhánh** từ bảng `rbac_*` + `staff_branch_assignment`. Quyết định phân quyền (vd `MEMBER_VIEW_FULL_CCCD`, `RATING_VIEW_AUTHOR`, quyền truy cập chi nhánh) được thực thi ở tầng application.
-- App DB **không** lưu mật khẩu nữa. `identity_user_account` trở thành bảng ánh xạ mỏng: id nội bộ ↔ `keycloak_user_id` (UUID) + `account_type` (STAFF/MEMBER) + status đồng bộ. (Xem §9 tác động P1.)
+**VI —** **Keycloak = xác thực; app = phân quyền (đã được sơ đồ kiến trúc xác nhận).**
+- Realm `gym-platform`; client `gym-admin-web`, `gym-member-web` (public + PKCE); API = **resource server** OAuth2 kiểm tra JWT qua JWKS.
+- App ánh xạ `sub` trong JWT → principal nội bộ, rồi **module `identity`** thực thi: **Role · Phạm vi chi nhánh · Quyền sở hữu · Quyền hạt mịn** dựa trên `rbac_*` + `staff_branch_assignment`.
+- App DB không lưu mật khẩu; `identity_user_account` ánh xạ id nội bộ ↔ `keycloak_user_id`. (Xem `data-model/p1-identity-org.md`.)
 
-```mermaid
-sequenceDiagram
-    participant U as Web (Admin/Member)
-    participant KC as Keycloak
-    participant API as API Monolith
-    participant DB as PostgreSQL
-    U->>KC: 1. Login (OIDC + PKCE)
-    KC-->>U: 2. Access JWT (sub, realm roles)
-    U->>API: 3. Request + Bearer JWT
-    API->>KC: 4. Validate via JWKS (cached)
-    API->>DB: 5. Load principal + branch-scoped permissions (rbac_*)
-    API-->>U: 6. Authorized response / 403 if denied
-```
-
-## 6. Eventing with Kafka / Sự kiện với Kafka
-
-**EN —** Kafka decouples async side-effects without weakening core consistency.
-- **Transactional Outbox**: in the same DB transaction as the business change, the module appends a row to an `outbox_event` table. A relay (Debezium-style CDC later, or a polling publisher initially) publishes committed rows to Kafka and marks them sent. This guarantees "event published iff business change committed" — consistent with our race-condition rules.
-- **In-process stays in-process**: payment confirmation, booking slot acquisition, quota/stock deduction use PostgreSQL constraints / atomic SQL / transactions — *not* Kafka. Kafka only carries the resulting **facts**.
-- **Topics** (by aggregate, keyed by aggregate id for ordering): `member.events`, `kyc.events`, `contract.events`, `payment.events`, `booking.events`, `checkin.events`, `inventory.events`, `audit.events`.
-- **Consumers** (initially `@KafkaListener` inside the monolith; extractable later): Notification, Audit stream, CRM follow-up, Reporting projections. Consumers must be **idempotent** (dedupe by event id).
-
-**VI —** Kafka tách rời tác vụ phụ async mà không làm yếu nhất quán lõi.
-- **Transactional Outbox**: trong cùng transaction DB với thay đổi nghiệp vụ, module ghi 1 dòng vào bảng `outbox_event`. Một relay (sau này dạng CDC Debezium, ban đầu là publisher polling) publish các dòng đã commit lên Kafka và đánh dấu đã gửi. Đảm bảo "event được publish khi và chỉ khi thay đổi nghiệp vụ đã commit" — đúng với rule chống race condition.
-- **In-process vẫn in-process**: xác nhận thanh toán, giành slot booking, trừ quota/kho dùng constraint PostgreSQL / atomic SQL / transaction — *không* qua Kafka. Kafka chỉ chở **sự kiện kết quả**.
-- **Topic** (theo aggregate, key theo id aggregate để giữ thứ tự): `member.events`, `kyc.events`, `contract.events`, `payment.events`, `booking.events`, `checkin.events`, `inventory.events`, `audit.events`.
-- **Consumer** (ban đầu `@KafkaListener` trong monolith; sau tách được): Notification, Audit stream, CSKH follow-up, Projection báo cáo. Consumer phải **idempotent** (khử trùng theo event id).
-
-```mermaid
-flowchart LR
-    BIZ["Use case (TX)"] -->|same TX| OUT[("outbox_event")]
-    BIZ -->|same TX| DATA[("business tables")]
-    OUT --> RELAY["Outbox relay"]
-    RELAY --> KAFKA[["Kafka topic"]]
-    KAFKA --> C1["Notification"] & C2["Audit"] & C3["CRM"] & C4["Reporting"]
-```
-
-## 7. Observability / Quan sát
+## 6. Data stores & runtime support / Kho dữ liệu & hỗ trợ runtime
 
 **EN —**
-- **Metrics**: Spring Boot Actuator + Micrometer expose `/actuator/prometheus`; Prometheus scrapes; Grafana dashboards (JVM, HTTP, DB pool, Kafka lag, business KPIs).
-- **Tracing**: Micrometer Tracing (OpenTelemetry/Brave bridge) exports spans to **Zipkin**. Trace context propagates across HTTP **and** Kafka (producer/consumer headers) for end-to-end traces.
-- **Logging**: structured logs enriched with `traceId`/`spanId` for correlation with Zipkin.
-- **Health**: `/actuator/health` reports `db`, `flyway`, `kafka`, and Keycloak readiness.
+- **PostgreSQL** — source of truth: business tables, constraints & indexes, ACID transactions, atomic SQL. Holds `outbox_event`.
+- **Redis** — cache & short-lived locks: **QR token TTL**, **one-time nonce**, **duplicate-scan lock**, **rate limiting**. Redis is a *performance/ephemeral* layer; it does **not** replace durable DB constraints. Authoritative race protection (trial-once-per-CCCD, payment idempotency, class booking uniqueness, stock/quota) stays in PostgreSQL (see `CLAUDE.md` Race Condition Protection).
+- **Object Storage (S3-compatible)** — CCCD / student card images, contract PDF, invoice/receipt, equipment/product images. The DB stores only the object key/URL; sensitive objects are access-controlled by RBAC and reads/writes audited.
 
 **VI —**
-- **Metrics**: Spring Boot Actuator + Micrometer expose `/actuator/prometheus`; Prometheus scrape; Grafana dashboard (JVM, HTTP, DB pool, Kafka lag, KPI nghiệp vụ).
-- **Tracing**: Micrometer Tracing (cầu nối OpenTelemetry/Brave) xuất span sang **Zipkin**. Trace context lan truyền qua HTTP **và** Kafka (header producer/consumer) để có trace đầu-cuối.
-- **Logging**: log có cấu trúc kèm `traceId`/`spanId` để tương quan với Zipkin.
-- **Health**: `/actuator/health` báo `db`, `flyway`, `kafka`, và readiness Keycloak.
+- **PostgreSQL** — nguồn sự thật: bảng nghiệp vụ, constraint & index, transaction ACID, atomic SQL. Chứa `outbox_event`.
+- **Redis** — cache & lock ngắn hạn: **QR token TTL**, **nonce một lần**, **lock chống quét trùng**, **rate limit**. Redis là lớp *hiệu năng/ephemeral*; **không** thay thế constraint bền vững của DB. Bảo vệ race condition có thẩm quyền (trial 1 lần/CCCD, idempotency thanh toán, uniqueness đặt lớp, kho/quota) vẫn ở PostgreSQL (xem `CLAUDE.md`).
+- **Object Storage (S3)** — ảnh CCCD/thẻ SV, contract PDF, hóa đơn/biên nhận, ảnh thiết bị/sản phẩm. DB chỉ lưu object key/URL; object nhạy cảm kiểm soát truy cập bằng RBAC và audit khi đọc/ghi.
 
-## 8. Local development topology / Hạ tầng dev local
-
-**EN —** `infra/docker/docker-compose.yml` will add (next step, on approval): `keycloak` (+ its own Postgres schema/db), `kafka` (KRaft mode, no ZooKeeper), `prometheus`, `grafana`, `zipkin`, and optionally `kafka-ui`. App config (`application.yaml`) gains: OAuth2 resource-server issuer-uri, Kafka bootstrap servers, Prometheus endpoint exposure, Zipkin endpoint.
-
-**VI —** `infra/docker/docker-compose.yml` sẽ thêm (bước sau, khi được duyệt): `keycloak` (+ Postgres/db riêng), `kafka` (chế độ KRaft, không ZooKeeper), `prometheus`, `grafana`, `zipkin`, và tùy chọn `kafka-ui`. Cấu hình app (`application.yaml`) bổ sung: issuer-uri resource-server OAuth2, Kafka bootstrap servers, expose endpoint Prometheus, endpoint Zipkin.
-
-## 9. Impact on existing design / Tác động lên thiết kế hiện có
+## 7. Async eventing / Sự kiện bất đồng bộ — Outbox now, Kafka later
 
 **EN —**
-1. **P1 data model (identity/rbac)** must be revised: drop `password_hash`; `identity_user_account` becomes a Keycloak mapping (`keycloak_user_id` UUID UNIQUE, `account_type`). `rbac_*` and `staff_branch_assignment` **remain** as app-side authorization. See `data-model/p1-identity-org.md` (to be updated).
-2. **New tables**: `outbox_event` (+ consumer idempotency/dedupe table) — designed in a dedicated phase.
-3. **Maven deps (later)**: `spring-boot-starter-oauth2-resource-server`, `spring-kafka`, `micrometer-registry-prometheus`, `micrometer-tracing-bridge-brave` + `zipkin-reporter-brave`.
-4. **Docs to update**: `architecture-overview.md` (move these from "future" to "current"), `CLAUDE.md` locked baseline (add approved infra) — proposed, see §10.
-5. ADRs created: **ADR-0006** (Keycloak), **ADR-0007** (Kafka), **ADR-0008** (Observability).
+- **Now**: business modules append events to **`outbox_event`** within the **same DB transaction** as the business change → "event recorded iff business change committed". Nothing is lost even before Kafka exists.
+- **Later**: an **Outbox Relay** (polling first, **Debezium CDC** later) publishes committed events to **Kafka**, where async consumers react (notification, audit, report, CRM). Consumers must be **idempotent**.
+- Core consistency-critical decisions are **never** moved to Kafka — they stay transactional in PostgreSQL. Kafka only carries resulting facts.
 
 **VI —**
-1. **Data model P1 (identity/rbac)** phải sửa: bỏ `password_hash`; `identity_user_account` thành bảng ánh xạ Keycloak (`keycloak_user_id` UUID UNIQUE, `account_type`). `rbac_*` và `staff_branch_assignment` **giữ nguyên** làm phân quyền phía app. Xem `data-model/p1-identity-org.md` (sẽ cập nhật).
-2. **Bảng mới**: `outbox_event` (+ bảng khử trùng idempotency cho consumer) — thiết kế ở một phase riêng.
-3. **Maven deps (sau)**: `spring-boot-starter-oauth2-resource-server`, `spring-kafka`, `micrometer-registry-prometheus`, `micrometer-tracing-bridge-brave` + `zipkin-reporter-brave`.
-4. **Docs cần cập nhật**: `architecture-overview.md` (chuyển các hạ tầng này từ "tương lai" sang "hiện tại"), locked baseline `CLAUDE.md` (thêm hạ tầng đã duyệt) — đề xuất, xem §10.
-5. ADR đã tạo: **ADR-0006** (Keycloak), **ADR-0007** (Kafka), **ADR-0008** (Observability).
+- **Bây giờ**: module nghiệp vụ ghi event vào **`outbox_event`** trong **cùng transaction DB** với thay đổi nghiệp vụ → "event được ghi khi và chỉ khi thay đổi đã commit". Không mất event ngay cả khi chưa có Kafka.
+- **Sau này**: **Outbox Relay** (polling trước, **Debezium CDC** sau) publish event đã commit lên **Kafka** để consumer async xử lý (notification, audit, report, CRM). Consumer phải **idempotent**.
+- Quyết định lõi cần nhất quán **không bao giờ** đưa sang Kafka — vẫn transactional trong PostgreSQL. Kafka chỉ chở sự kiện kết quả.
 
-## 10. Decisions to confirm / Quyết định cần chốt
+## 8. Observability / Quan sát
 
-**EN —**
-1. **Authorization model**: confirm hybrid (Keycloak authN + app branch-scoped authZ). Alternative: push all roles into Keycloak (loses clean per-branch scoping).
-2. **CLAUDE.md baseline edit**: may I add Keycloak/Kafka/Prometheus+Grafana/Zipkin to the "Locked Technical Baseline" as approved supporting infrastructure (still Modular Monolith)?
-3. **Outbox relay**: start with a simple polling publisher now, move to Debezium CDC later — OK?
+**EN —** Metrics: Micrometer/Actuator `/actuator/prometheus` → **Prometheus** → **Grafana** (JVM, HTTP, DB pool, business KPIs; Kafka lag later). Tracing: Micrometer Tracing (Brave/OTel) → **Zipkin**, context propagated over HTTP (and Kafka later). Logs: structured with `traceId`/`spanId`; centralized **Loki/ELK later**.
 
-**VI —**
-1. **Mô hình phân quyền**: xác nhận hybrid (Keycloak xác thực + app phân quyền theo chi nhánh). Phương án khác: đẩy toàn bộ role vào Keycloak (mất khả năng scope theo chi nhánh gọn gàng).
-2. **Sửa baseline CLAUDE.md**: cho phép tôi thêm Keycloak/Kafka/Prometheus+Grafana/Zipkin vào "Locked Technical Baseline" như hạ tầng hỗ trợ đã duyệt (vẫn Modular Monolith) chứ?
-3. **Outbox relay**: bắt đầu bằng publisher polling đơn giản, sau chuyển Debezium CDC — được không?
+**VI —** Metrics: Micrometer/Actuator `/actuator/prometheus` → **Prometheus** → **Grafana** (JVM, HTTP, DB pool, KPI nghiệp vụ; Kafka lag sau). Tracing: Micrometer Tracing (Brave/OTel) → **Zipkin**, lan truyền context qua HTTP (và Kafka sau). Log: có cấu trúc kèm `traceId`/`spanId`; tập trung **Loki/ELK sau**.
+
+## 9. Local development topology / Hạ tầng dev local
+
+**EN —** `infra/docker/docker-compose.yml` provides: `postgres`, `pgadmin`, `keycloak`, `redis`, `minio` (S3) + `minio-setup`, `prometheus`, `grafana`, `zipkin`. **Kafka is deferred** (commented block in the compose). The Spring app runs on the host (port 8080); Keycloak is mapped to 8085 to avoid clashing.
+
+**VI —** `infra/docker/docker-compose.yml` cung cấp: `postgres`, `pgadmin`, `keycloak`, `redis`, `minio` (S3) + `minio-setup`, `prometheus`, `grafana`, `zipkin`. **Kafka hoãn lại** (khối comment trong compose). App Spring chạy trên host (cổng 8080); Keycloak map sang 8085 để tránh đụng cổng.
+
+## 10. Decisions status / Trạng thái quyết định
+
+| # | Decision | Status |
+|---|---|---|
+| 1 | Hybrid: Keycloak authN + app branch-scoped authZ | ✅ Confirmed by diagram |
+| 2 | Async: Transactional Outbox now, Kafka later (polling → Debezium) | ✅ Per diagram |
+| 3 | Redis for cache + short locks (durable uniqueness stays in PostgreSQL) | ✅ Per diagram → ADR-0009 |
+| 4 | Object Storage (S3) for documents/images; DB stores object key only | ✅ Per diagram → ADR-0010 |
+| 5 | CLAUDE.md baseline updated with adopted supporting infra | ✅ Updated |
+
+ADRs: **0006** Keycloak · **0007** Outbox-now/Kafka-later · **0008** Observability · **0009** Redis · **0010** Object Storage.

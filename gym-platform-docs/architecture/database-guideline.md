@@ -113,7 +113,8 @@ CCCD and personal documents are sensitive.
 
 Guidelines:
 - Do not store raw document images in DB.
-- Store file path/object key only.
+- Store file path/object key only — binaries live in S3-compatible Object Storage (ADR-0010).
+- Prefer short-lived pre-signed URLs for sensitive objects (CCCD, student card).
 - Consider encryption/tokenization for identity number.
 - Limit access by RBAC.
 - Audit all reads/updates for sensitive data when practical.

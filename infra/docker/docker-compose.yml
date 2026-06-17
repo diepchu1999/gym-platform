@@ -1,72 +1,185 @@
 # Docker Compose cho môi trường DEV LOCAL của gym-platform.
-# Mục tiêu: dựng nhanh PostgreSQL (+ pgAdmin để xem DB) cho dev.
+# Hạ tầng hỗ trợ (vẫn Modular Monolith): PostgreSQL, Keycloak, Redis, MinIO (S3), Prometheus, Grafana, Zipkin.
+# Kafka HOÃN LẠI (xem ADR-0007) -> để dạng comment ở cuối.
 # KHÔNG dùng file này cho production.
-name: gym-platform-local   # Tên project compose -> tiền tố cho network/volume khi chạy
+name: gym-platform-local
 
 services:
+  # ---------------- PostgreSQL: nguồn sự thật của app ----------------
   postgres:
-    image: postgres:16-alpine       # Pin version 16 (khớp với DB sẽ dùng); -alpine cho image nhẹ
+    image: postgres:16-alpine
     container_name: gym-platform-postgres
-    restart: unless-stopped         # Tự khởi động lại trừ khi mình chủ động stop
+    restart: unless-stopped
     environment:
-      # Giá trị ${VAR:-default}: lấy từ .env nếu có, không thì dùng default.
-      # 3 biến này PHẢI khớp với datasource trong application.yaml và .env.example.
-      POSTGRES_DB: ${POSTGRES_DB:-gym_platform}        # Tên database
-      POSTGRES_USER: ${POSTGRES_USER:-gym}             # User đăng nhập DB
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gym_dev_password}  # Chỉ là mật khẩu DEV
-      PGDATA: /var/lib/postgresql/data/pgdata          # Thư mục data nằm trong subfolder (tránh lỗi quyền trên 1 số volume)
+      # 3 biến PHẢI khớp datasource trong application.yaml và .env.example
+      POSTGRES_DB: ${POSTGRES_DB:-gym_platform}
+      POSTGRES_USER: ${POSTGRES_USER:-gym}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gym_dev_password}
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"   # host:container — đổi POSTGRES_PORT nếu 5432 bị chiếm
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data   # Named volume -> data còn lại sau khi container bị xoá
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      # Báo "healthy" chỉ khi Postgres thật sự nhận kết nối -> để pgAdmin/app chờ đúng lúc.
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"
-        ]
-        # $$ = escape để compose KHÔNG nội suy; biến được shell TRONG container đọc lúc chạy.
-      interval: 10s    # Kiểm tra mỗi 10s
-      timeout: 5s      # Quá 5s không phản hồi coi như fail
-      retries: 5       # Fail 5 lần liên tiếp mới đánh dấu unhealthy
-    networks:
-      - gym-platform-net
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [gym-platform-net]
 
+  # ---------------- pgAdmin: UI xem DB ----------------
   pgadmin:
     image: dpage/pgadmin4:8
     container_name: gym-platform-pgadmin
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@gym-platform.local}  # Tài khoản đăng nhập pgAdmin (UI)
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}                # Mật khẩu DEV cho pgAdmin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@gym-platform.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
     ports:
-      - "${PGADMIN_PORT:-5050}:80"   # Mở pgAdmin tại http://localhost:5050
+      - "${PGADMIN_PORT:-5050}:80"
     volumes:
-      - pgadmin-data:/var/lib/pgadmin   # Giữ cấu hình server đã add trong pgAdmin
+      - pgadmin-data:/var/lib/pgadmin
     depends_on:
       postgres:
-        condition: service_healthy   # Chỉ khởi động pgAdmin sau khi Postgres healthy
-    networks:
-      - gym-platform-net
+        condition: service_healthy
+    networks: [gym-platform-net]
 
-  # ---- TUỲ CHỌN: bật khi cần Redis (cache/rate-limit/idempotency). Hiện skeleton CHƯA cần. ----
-  # redis:
-  #   image: redis:7-alpine
-  #   container_name: gym-platform-redis
+  # ---------------- Keycloak: Identity Provider (authentication) ----------------
+  # Dev mode (start-dev) dùng DB dev-file lưu trong volume. Production phải trỏ Postgres riêng.
+  # Map ra cổng 8085 để KHÔNG đụng cổng 8080 của app Spring chạy trên host.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    container_name: gym-platform-keycloak
+    restart: unless-stopped
+    command: ["start-dev"]
+    environment:
+      # Keycloak 26+ dùng KC_BOOTSTRAP_ADMIN_* để tạo admin lần đầu
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "${KEYCLOAK_PORT:-8085}:8080"
+    volumes:
+      - keycloak-data:/opt/keycloak/data
+    networks: [gym-platform-net]
+
+  # ---------------- Redis: cache + short locks (QR TTL, nonce, dup-scan, rate limit) ----------------
+  redis:
+    image: redis:7-alpine
+    container_name: gym-platform-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [gym-platform-net]
+
+  # ---------------- MinIO: Object Storage tương thích S3 (tài liệu/ảnh) ----------------
+  minio:
+    image: minio/minio:latest
+    container_name: gym-platform-minio
+    restart: unless-stopped
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"     # S3 API
+      - "${MINIO_CONSOLE_PORT:-9001}:9001" # Web console
+    volumes:
+      - minio-data:/data
+    networks: [gym-platform-net]
+
+  # One-shot: tạo sẵn các bucket cần dùng rồi thoát
+  minio-setup:
+    image: minio/mc:latest
+    container_name: gym-platform-minio-setup
+    depends_on: [minio]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    entrypoint: >
+      /bin/sh -c "
+      until /usr/bin/mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD; do echo 'waiting for minio...'; sleep 2; done;
+      /usr/bin/mc mb -p local/kyc local/contracts local/invoices local/media;
+      echo 'minio buckets ready';
+      "
+    networks: [gym-platform-net]
+
+  # ---------------- Prometheus: thu thập metrics ----------------
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: gym-platform-prometheus
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # để scrape app Spring chạy trên host
+    networks: [gym-platform-net]
+
+  # ---------------- Grafana: dashboard ----------------
+  grafana:
+    image: grafana/grafana:latest
+    container_name: gym-platform-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro  # auto add datasource Prometheus
+    depends_on: [prometheus]
+    networks: [gym-platform-net]
+
+  # ---------------- Zipkin: distributed tracing ----------------
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: gym-platform-zipkin
+    restart: unless-stopped
+    ports:
+      - "${ZIPKIN_PORT:-9411}:9411"
+    networks: [gym-platform-net]
+
+  # ---------------- Kafka (HOÃN LẠI - ADR-0007). Bật khi cần async backbone. ----------------
+  # kafka:
+  #   image: bitnami/kafka:3.7      # KRaft mode, không cần ZooKeeper
+  #   container_name: gym-platform-kafka
   #   restart: unless-stopped
+  #   environment:
+  #     KAFKA_CFG_NODE_ID: "0"
+  #     KAFKA_CFG_PROCESS_ROLES: "controller,broker"
+  #     KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: "0@kafka:9093"
+  #     KAFKA_CFG_LISTENERS: "PLAINTEXT://:9092,CONTROLLER://:9093"
+  #     KAFKA_CFG_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9092"
+  #     KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
   #   ports:
-  #     - "${REDIS_PORT:-6379}:6379"
+  #     - "${KAFKA_PORT:-9092}:9092"
   #   volumes:
-  #     - redis-data:/data
-  #   networks:
-  #     - gym-platform-net
+  #     - kafka-data:/bitnami/kafka
+  #   networks: [gym-platform-net]
 
 volumes:
-  postgres-data:   # Dữ liệu Postgres
-  pgadmin-data:    # Cấu hình pgAdmin
-  # redis-data:    # Bật cùng service redis ở trên
+  postgres-data:
+  pgadmin-data:
+  keycloak-data:
+  redis-data:
+  minio-data:
+  prometheus-data:
+  grafana-data:
+  # kafka-data:   # bật cùng service kafka ở trên
 
 networks:
   gym-platform-net:
-    driver: bridge   # Mạng nội bộ để các service gọi nhau qua tên service (vd host "postgres")
+    driver: bridge

@@ -17,15 +17,15 @@ Spring Boot Modular Monolith API
 PostgreSQL
 ```
 
-Future supporting infrastructure may include Redis, object storage, and background jobs.
+Future supporting infrastructure may include background jobs and a managed object-storage / CDN.
 
-> **Adopted supporting infrastructure (see [`solution-architecture.md`](solution-architecture.md) + ADR-0006/0007/0008):**
-> - **Keycloak** — authentication / OIDC identity provider (app does branch-scoped authorization).
-> - **Apache Kafka** — async event backbone via Transactional Outbox (core consistency stays in PostgreSQL).
-> - **Prometheus + Grafana** — metrics & dashboards (Micrometer / Actuator).
-> - **Zipkin** — distributed tracing.
->
-> These are *supporting infrastructure*. The system remains a **Modular Monolith** (one deployable).
+> **Adopted supporting infrastructure** (see [`solution-architecture.md`](solution-architecture.md) + ADR-0006…0010). Still a **Modular Monolith** (one deployable):
+> - **Keycloak** — authentication / OIDC; branch-scoped authorization stays in the app `identity` module (ADR-0006).
+> - **PostgreSQL** — source of truth (transactions, atomic SQL, constraints) + `outbox_event`.
+> - **Redis** — cache + short-lived locks: QR token TTL, one-time nonce, duplicate-scan lock, rate limiting; durable uniqueness stays in PostgreSQL (ADR-0009).
+> - **Object Storage (S3-compatible)** — documents/images (CCCD, contract PDF, invoices, media); DB stores object key only (ADR-0010).
+> - **Transactional Outbox** now; **Kafka** async backbone **later** (ADR-0007).
+> - **Prometheus + Grafana** (metrics) and **Zipkin** (tracing); **Loki/ELK** logs later (ADR-0008).
 
 ## Backend Architecture Style
 Use SOLID principles and a practical Clean/Hexagonal Architecture style.

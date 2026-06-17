@@ -59,15 +59,38 @@ Chưa tạo bảng nghiệp vụ ở `V001`.
 | Phase | Nội dung | File thiết kế |
 |---|---|---|
 | P0 | Baseline: extensions + trigger | (trong README này) |
-| **P1** | **Identity, RBAC, Branch, Staff** | [`p1-identity-org.md`](p1-identity-org.md) |
-| P2 | Member, KYC, Student verify, Trial usage | _chưa làm_ |
-| P3 | Package, Membership, Contract, Order, Payment, Installment | _chưa làm_ |
-| P4 | Check-in (token, log) | _chưa làm_ |
-| P5 | Booking core (booking, hold, event, resource) | _chưa làm_ |
-| P6 | Group class / PT / Private room / Massage (+ quota) | _chưa làm_ |
-| P7 | Inventory / Pantry / Equipment-Maintenance | _chưa làm_ |
-| P8 | CRM / Rating / Promotion / Notification / Report / Audit | _chưa làm_ |
+| P1 | Identity, RBAC, Branch, Staff | [`p1-identity-org.md`](p1-identity-org.md) ✅ |
+| P2 | Member, KYC, Student verify, Trial usage | [`p2-member-kyc.md`](p2-member-kyc.md) ✅ |
+| P3 | Package, Membership, Contract, Order, Payment, Installment | [`p3-package-contract-payment.md`](p3-package-contract-payment.md) ✅ |
+| P4 | Check-in (token, log) | [`p4-checkin.md`](p4-checkin.md) ✅ |
+| P5 | Booking core (booking, resource slot, hold, event) | [`p5-booking-core.md`](p5-booking-core.md) ✅ |
+| P6 | Group class / PT / Private room / Massage (+ quota) | [`p6-booking-verticals.md`](p6-booking-verticals.md) ✅ |
+| P7 | Inventory / Pantry / Equipment-Maintenance | [`p7-inventory-pantry-equipment.md`](p7-inventory-pantry-equipment.md) ✅ |
+| P8 | CRM / Rating / Promotion / Notification / Report / Audit | [`p8-crm-rating-promotion-notification-audit.md`](p8-crm-rating-promotion-notification-audit.md) ✅ |
+| P9 | Messaging: Transactional Outbox + consumer idempotency | [`p9-messaging-outbox.md`](p9-messaging-outbox.md) ✅ |
+
+> Toàn bộ thiết kế bảng đã hoàn tất (P1–P9). Bước kế tiếp: viết Flyway migration khớp từng phase (sau khi owner duyệt).
 
 ## Mapping phase → file migration (dự kiến)
 
-`V001` baseline · `V002` rbac+identity · `V003` branch · `V004` staff · `V005` seed rbac roles · ... (số hiệu chốt khi viết migration).
+- P0: `V001` baseline (extensions + trigger)
+- P1: `V002` identity_rbac · `V003` branch · `V004` staff · `V005` seed_rbac
+- P2: `V006` member · `V007` kyc
+- P3: `V008` package_plan · `V009` contract_membership · `V010` order_payment · `V011` installment
+- P4: `V012` checkin
+- P5: `V013` booking_core (+ EXCLUDE)
+- P6: `V014` group_class · `V015` pt · `V016` private_room · `V017` massage
+- P7: `V018` product_inventory · `V019` purchase_transfer_adjust · `V020` equipment_maintenance
+- P8: `V021` crm · `V022` rating_promotion · `V023` notification · `V024` audit
+- P9: `V025` outbox
+
+(Số hiệu chốt lại khi viết migration; `outbox_event` có thể đẩy sớm nếu module nào cần phát event trước.)
+
+## Hạ tầng đã duyệt chạm vào data ở đâu
+
+Tham chiếu [`../solution-architecture.md`](../solution-architecture.md) + ADR-0006…0010.
+
+- **Keycloak (ADR-0006)**: `identity_user_account` là bảng ánh xạ tới `keycloak_user_id` (không lưu mật khẩu). RBAC theo chi nhánh (`rbac_*`, `staff_branch_assignment`) vẫn ở DB.
+- **Redis (ADR-0009)**: KHÔNG phải bảng. Lo state ephemeral (QR token TTL, nonce, lock chống quét trùng, rate limit). **Mọi invariant đúng-đắn vẫn phải có constraint/atomic update trong PostgreSQL** (vd trial 1/CCCD, payment txn, class booking uniqueness).
+- **Object Storage (ADR-0010)**: cột ảnh/tài liệu (`kyc_request.front_image_url`, contract PDF, invoice, media) chỉ lưu **object key/URL**, không lưu bytes.
+- **Outbox (ADR-0007)**: bảng `outbox_event` (thiết kế ở một phase riêng — "messaging") được ghi trong cùng transaction nghiệp vụ; Kafka nối vào sau.
