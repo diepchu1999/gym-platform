@@ -20,7 +20,7 @@ Tài liệu thiết kế database cho gym-platform, bám theo `business/*` và `
 | Boolean cờ | `BOOLEAN NOT NULL DEFAULT ...`. |
 | Soft delete | Không xóa mềm toàn cục. Dùng cột `status`. Hành động nhạy cảm ghi `audit_log` (P8). |
 | FK | **Chỉ FK trong cùng schema/module.** FK chéo module bị CẤM → dùng cột ID logic (BIGINT, index), toàn vẹn ở app layer (ADR-0011, [`module-schemas.md`](module-schemas.md)). Intra FK: `ON DELETE RESTRICT` mặc định; `CASCADE` cho bảng phụ thuộc thuần. |
-| Module boundary | Mỗi module sở hữu bảng của mình. Module khác **không** query trực tiếp bảng — đi qua application/query service (xem `modular-monolith.md`). FK xuyên module được phép ở tầng DB, nhưng truy cập code phải qua service. |
+| Module boundary | Mỗi module sở hữu bảng của mình. Module khác **không** query trực tiếp bảng — đi qua application/query service (xem `modular-monolith.md`). FK xuyên module **không được phép** ở tầng DB; dùng logical reference và enforce ở application layer. |
 
 ## Quy ước chống race condition (rule bắt buộc)
 

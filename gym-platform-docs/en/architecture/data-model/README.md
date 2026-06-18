@@ -23,7 +23,7 @@ Database design for gym-platform, following `business/*` and `architecture/datab
 | Soft delete | No global soft delete. Use a `status` column. Sensitive actions go to `audit_log` (P8). |
 | Schema | **One schema per module** (microservices-ready) — e.g. `member.member_profile`, `booking.booking`. See [`module-schemas.md`](module-schemas.md) + ADR-0011. `flyway_schema_history` lives in `public`. |
 | FK | **Only FK within the same schema/module.** Cross-module FK is FORBIDDEN → use a logical ID column (BIGINT, indexed), integrity in the app layer (ADR-0011, [`module-schemas.md`](module-schemas.md)). Intra FK: `ON DELETE RESTRICT` default; `CASCADE` for pure dependent tables. |
-| Module boundary | Each module owns its tables. Other modules must NOT query them directly — go through application/query services (see `modular-monolith.md`). |
+| Module boundary | Each module owns its tables. Other modules must NOT query them directly — go through application/query services (see `modular-monolith.md`). Cross-module FK is **not allowed** at DB level; use logical references and enforce integrity in the application layer. |
 
 ## Race-condition conventions (mandatory)
 

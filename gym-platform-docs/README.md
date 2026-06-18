@@ -18,7 +18,7 @@ gym-platform-docs/
 │   ├── architecture/        # guidelines, architecture-overview, solution-architecture
 │   │   └── data-model/      # README, module-schemas, p1..p9
 │   ├── modules/             # member-kyc, checkin, booking-engine, ...
-│   ├── decisions/           # ADR-0001 .. ADR-0011
+│   ├── decisions/           # ADR-0001 .. ADR-0012
 │   └── dev-notes/
 └── en/                      # English version (mirror of vi/)
 ```
@@ -28,10 +28,10 @@ gym-platform-docs/
 | Section | vi/ | en/ |
 |---|---|---|
 | business (5) | ✅ | ✅ |
-| architecture (guidelines + overview + solution) (9) | ✅ | ✅ |
+| architecture (guidelines + overview + solution) (10) | ✅ | ✅ |
 | architecture/data-model (11) | ✅ | ✅ |
 | modules (12) | ✅ | ✅ |
-| decisions / ADR (11) | ✅ | ✅ |
+| decisions / ADR (12) | ✅ | ✅ |
 | dev-notes (1) | ✅ | ✅ |
 
-**Hoàn tất: 49 file mỗi bản (vi/ + en/).** Sơ đồ kiến trúc dùng chung ở [`diagrams/`](diagrams/).
+**Hoàn tất: 51 file mỗi bản (vi/ + en/).** Sơ đồ kiến trúc dùng chung ở [`diagrams/`](diagrams/).

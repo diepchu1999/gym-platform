@@ -138,7 +138,7 @@ The controller depends only on `port/in` + request/response DTOs. The service de
 3. Keep services & adapters **package-private**.
 4. Native SQL in `resources/sql/<module>/*.sql`; adapters inject `SqlLoader` + `NamedParameterJdbcTemplate`.
 5. Reuse the `shared/` utilities (§8) — do not re-implement.
-6. `./mvnw -q test-compile` to confirm wiring + ArchitectureRulesTest passes.
+6. `./mvnw -q test-compile` to confirm wiring passes. Once `ArchitectureRulesTest` is added, it must pass too.
 
 ---
 
@@ -160,7 +160,7 @@ The controller depends only on `port/in` + request/response DTOs. The service de
 6. `adapter/out/persistence` *(if needed)* — `<X>ReadAdapter`: native SQL from `.sql` via `SqlLoader`, map with `RowMapper`, paginate with `PageResponse.ofPageIndex`.
 7. `application/service` — `<X>QueryService implements ...UseCase`, `@Transactional(readOnly=true)`; get-by-id `.orElseThrow(BusinessException.notFound(...))`.
 8. `adapter/in/rest/<audience>/response` — `<X>...Response` + `static fromDomain(view)`.
-9. `adapter/in/rest/<audience>` — `@GetMapping`, map query → `Query.from(...)` (or `long`) → `usecase.handle(...)` → `.map(Response::fromDomain)` → `ApiResponse.success(...)`.
+9. `adapter/in/rest/<audience>` — `@GetMapping`, map query → `Query.from(...)` (or `long`) → `usecase.handle(...)` → `.map(Response::fromDomain)` → `ApiResponse.ok(...)`.
 10. Verify: `./mvnw -q test-compile` + smoke.
 
 ### 7.2. WRITE (POST/PATCH/PUT/DELETE) — order
@@ -171,7 +171,7 @@ The controller depends only on `port/in` + request/response DTOs. The service de
 5. `application/port/out` *(if needed)* — add a write method to `Write<X>Port`. Write input = **command + system/derived values** (id, generated code, timestamp, resolved name) or the domain aggregate — **never** a read view. Derived nested data goes into a `New<X>` write model nested in the port. Cheap read guards come from `Read<X>Port`.
 6. `adapter/out/persistence` *(if needed)* — `<X>WriteAdapter`: INSERT/UPDATE via Native SQL; **atomic SQL** for counters/quota/stock (`... WHERE qty >= :n`) per `database-guideline.md`.
 7. `application/service` — `<X>CommandService implements <Verb><X>UseCase`, `@Transactional`: load/guard → validate domain → save → **reload + return view**.
-8. `adapter/in/rest/<audience>` — `@PostMapping/@PatchMapping/...`, spread `body.field()` into `Command.from(...)` → `usecase.handle(...)` → `Response.fromDomain(...)` → `ApiResponse.success(...)`.
+8. `adapter/in/rest/<audience>` — `@PostMapping/@PatchMapping/...`, spread `body.field()` into `Command.from(...)` → `usecase.handle(...)` → `Response.fromDomain(...)` → `ApiResponse.ok(...)`.
 9. Verify: `./mvnw -q test-compile` + smoke.
 
 ### Distilled rules
@@ -202,9 +202,9 @@ The controller depends only on `port/in` + request/response DTOs. The service de
 
 ---
 
-## 9. Rules locked by a test
+## 9. Rules to lock by a test
 
-`src/test/java/com/gym/architecture/ArchitectureRulesTest` scans source (plain JDK, **no ArchUnit** because of Java 26 — ArchUnit's ASM may not read new class files) and fails the build on violations:
+The current source does not yet include `src/test/java/com/gym/architecture/ArchitectureRulesTest`. Before adding real business modules, add this test to scan source (plain JDK, **no ArchUnit** because of Java 26 — ArchUnit's ASM may not read new class files) and fail the build on violations:
 - **R1** `application` ↛ `adapter` (core does not import adapters).
 - **R2** `domain` ↛ framework/outer (Spring/JDBC/web).
 - **R3** Cross-module only via `api` (no importing another module's `domain`/`application`/`adapter`).
@@ -223,4 +223,4 @@ The controller depends only on `port/in` + request/response DTOs. The service de
 | `DomainException.validation/notFound` | `BusinessException.validation/notFound` | our shared layer |
 | (R1–R4) | added **R5**: forbid JPA in persistence | enforce ADR-0004 |
 
-Kept as-is: directory structure, read/write split, standard verbs, cross-module via `api/`, package-private services/adapters, self-validating commands, reload-after-write, source-scan ArchitectureRulesTest.
+Kept as-is: directory structure, read/write split, standard verbs, cross-module via `api/`, package-private services/adapters, self-validating commands, reload-after-write, and adding source-scan ArchitectureRulesTest before business modules expand.

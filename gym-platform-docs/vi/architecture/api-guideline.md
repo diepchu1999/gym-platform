@@ -22,27 +22,30 @@ Dùng danh từ số nhiều cho resource:
 ```
 
 ## Cấu trúc Response
-Response thành công khuyến nghị:
+Response thành công chuẩn hiện tại:
 
 ```json
 {
+  "success": true,
   "data": {},
-  "meta": {},
-  "message": "OK"
+  "error": null
 }
 ```
 
-Response lỗi khuyến nghị:
+Response lỗi chuẩn hiện tại:
 
 ```json
 {
+  "success": false,
+  "data": null,
   "error": {
     "code": "BOOKING_SLOT_UNAVAILABLE",
-    "message": "Selected slot is no longer available",
-    "details": {}
+    "message": "Selected slot is no longer available"
   }
 }
 ```
+
+Nếu cần thêm `meta`, `message`, hoặc `details`, phải cập nhật `ApiResponse`/`ApiError` và tài liệu trong cùng thay đổi.
 
 ## Phân trang
 Dùng cursor pagination cho danh sách lớn khi có thể.

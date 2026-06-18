@@ -29,13 +29,13 @@ Inspect current code before editing and propose a plan before coding.
 
 ## Important Docs
 - `CLAUDE.md`
-- `docs/business/GYM_Business_Requirement_Document_v1.md`
-- `docs/architecture/architecture-overview.md`
-- `docs/architecture/backend-guideline.md`
-- `docs/architecture/database-guideline.md`
-- `docs/architecture/frontend-guideline.md`
-- `docs/modules/`
-- `docs/decisions/`
+- `gym-platform-docs/vi/business/GYM_Business_Requirement_Document_v1.md`
+- `gym-platform-docs/vi/architecture/architecture-overview.md`
+- `gym-platform-docs/vi/architecture/backend-guideline.md`
+- `gym-platform-docs/vi/architecture/database-guideline.md`
+- `gym-platform-docs/vi/architecture/frontend-guideline.md`
+- `gym-platform-docs/vi/modules/`
+- `gym-platform-docs/vi/decisions/`
 
 ## Documentation Rule
 Every new technical decision must update Markdown docs. Important architectural decisions should have an ADR.

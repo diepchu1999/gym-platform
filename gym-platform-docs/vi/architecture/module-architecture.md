@@ -138,7 +138,7 @@ Controller chỉ phụ thuộc `port/in` + DTO request/response. Service chỉ p
 3. Service & adapter để **package-private**.
 4. Native SQL để file `resources/sql/<module>/*.sql`; adapter inject `SqlLoader` + `NamedParameterJdbcTemplate`.
 5. Tái dùng tiện ích `shared/` (§8) — không tự viết lại.
-6. `./mvnw -q test-compile` để chắc wiring + ArchitectureRulesTest pass.
+6. `./mvnw -q test-compile` để chắc wiring pass. Khi `ArchitectureRulesTest` được thêm, test này cũng phải pass.
 
 ---
 
@@ -160,7 +160,7 @@ Controller chỉ phụ thuộc `port/in` + DTO request/response. Service chỉ p
 6. `adapter/out/persistence` *(nếu cần)* — `<X>ReadAdapter`: native SQL từ file `.sql` qua `SqlLoader`, map bằng `RowMapper`, phân trang `PageResponse.ofPageIndex`.
 7. `application/service` — `<X>QueryService implements ...UseCase`, `@Transactional(readOnly=true)`; get-by-id `.orElseThrow(BusinessException.notFound(...))`.
 8. `adapter/in/rest/<audience>/response` — `<X>...Response` + `static fromDomain(view)`.
-9. `adapter/in/rest/<audience>` — `@GetMapping`, map query → `Query.from(...)` (hoặc `long`) → `usecase.handle(...)` → `.map(Response::fromDomain)` → `ApiResponse.success(...)`.
+9. `adapter/in/rest/<audience>` — `@GetMapping`, map query → `Query.from(...)` (hoặc `long`) → `usecase.handle(...)` → `.map(Response::fromDomain)` → `ApiResponse.ok(...)`.
 10. Verify: `./mvnw -q test-compile` + smoke.
 
 ### 7.2. WRITE (POST/PATCH/PUT/DELETE) — thứ tự
@@ -171,7 +171,7 @@ Controller chỉ phụ thuộc `port/in` + DTO request/response. Service chỉ p
 5. `application/port/out` *(nếu cần)* — thêm method ghi vào `Write<X>Port`. Input ghi = **command + giá trị hệ thống/derived** (id, code sinh, timestamp, tên đã resolve) hoặc domain aggregate — **KHÔNG** truyền read view. Dữ liệu con derive gom vào write model `New<X>` nested trong port. Guard đọc rẻ lấy từ `Read<X>Port`.
 6. `adapter/out/persistence` *(nếu cần)* — `<X>WriteAdapter`: INSERT/UPDATE bằng Native SQL; **atomic SQL** cho counter/quota/stock (`... WHERE qty >= :n`) theo `database-guideline.md`.
 7. `application/service` — `<X>CommandService implements <Verb><X>UseCase`, `@Transactional`: load/guard → validate domain → save → **reload + return view**.
-8. `adapter/in/rest/<audience>` — `@PostMapping/@PatchMapping/...`, trải `body.field()` vào `Command.from(...)` → `usecase.handle(...)` → `Response.fromDomain(...)` → `ApiResponse.success(...)`.
+8. `adapter/in/rest/<audience>` — `@PostMapping/@PatchMapping/...`, trải `body.field()` vào `Command.from(...)` → `usecase.handle(...)` → `Response.fromDomain(...)` → `ApiResponse.ok(...)`.
 9. Verify: `./mvnw -q test-compile` + smoke.
 
 ### Quy tắc rút ra
@@ -202,9 +202,9 @@ Controller chỉ phụ thuộc `port/in` + DTO request/response. Service chỉ p
 
 ---
 
-## 9. Rule được khóa bằng test
+## 9. Rule cần được khóa bằng test
 
-`src/test/java/com/gym/architecture/ArchitectureRulesTest` quét source (thuần JDK, **không ArchUnit** vì Java 26 — ASM của ArchUnit có thể chưa đọc class-file mới) và fail build nếu vi phạm:
+Source hiện tại chưa có `src/test/java/com/gym/architecture/ArchitectureRulesTest`. Trước khi thêm module nghiệp vụ thật, cần bổ sung test này để quét source (thuần JDK, **không ArchUnit** vì Java 26 — ASM của ArchUnit có thể chưa đọc class-file mới) và fail build nếu vi phạm:
 - **R1** `application` ↛ `adapter` (lõi không import adapter).
 - **R2** `domain` ↛ framework/lớp ngoài (Spring/JDBC/web).
 - **R3** Cross-module chỉ qua `api` (không import `domain`/`application`/`adapter` của module khác).
@@ -223,4 +223,4 @@ Controller chỉ phụ thuộc `port/in` + DTO request/response. Service chỉ p
 | `DomainException.validation/notFound` | `BusinessException.validation/notFound` | shared của ta |
 | (R1–R4) | thêm **R5**: cấm JPA trong persistence | enforce ADR-0004 |
 
-Giữ nguyên: cấu trúc thư mục, tách read/write, verb chuẩn, cross-module qua `api/`, package-private service/adapter, command tự validate, reload sau ghi, ArchitectureRulesTest source-scan.
+Giữ nguyên: cấu trúc thư mục, tách read/write, verb chuẩn, cross-module qua `api/`, package-private service/adapter, command tự validate, reload sau ghi, và bổ sung ArchitectureRulesTest source-scan trước khi module nghiệp vụ mở rộng.

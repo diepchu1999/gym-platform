@@ -22,27 +22,30 @@ Use plural nouns for resources:
 
 ## Response Shape
 
-Recommended success response:
+Current standard success response:
 
 ```json
 {
+  "success": true,
   "data": {},
-  "meta": {},
-  "message": "OK"
+  "error": null
 }
 ```
 
-Recommended error response:
+Current standard error response:
 
 ```json
 {
+  "success": false,
+  "data": null,
   "error": {
     "code": "BOOKING_SLOT_UNAVAILABLE",
-    "message": "Selected slot is no longer available",
-    "details": {}
+    "message": "Selected slot is no longer available"
   }
 }
 ```
+
+If `meta`, `message`, or `details` are needed, update `ApiResponse`/`ApiError` and this documentation in the same change.
 
 ## Pagination
 
