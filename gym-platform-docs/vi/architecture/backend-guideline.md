@@ -14,18 +14,17 @@
 - Không dùng JPA repository cho business query trừ khi có ADR sau cho phép.
 
 ## Bố cục package mỗi module
-Bố cục khuyến nghị:
+Chuẩn bắt buộc nằm ở [`module-architecture.md`](module-architecture.md) (Hexagonal, đã adapt cho Native SQL — ADR-0012). Tóm tắt:
 
 ```text
-module-name/
- ├── api/                 # controllers, request/response DTOs
- ├── application/         # use cases, commands, queries, application services
- ├── domain/              # entities, value objects, policies, domain services
- ├── port/                # repository ports, external service ports
- └── infrastructure/      # native SQL repositories, external adapters
+com/gym/<module>/
+ ├── api/                 # cổng public cross-module (<X>Directory, <X>Ref)
+ ├── domain/             # aggregate, enum, value object (KHÔNG framework)
+ ├── application/        # command, query, view, port/in, port/out, service
+ └── adapter/            # in/rest/{admin,client}, in/cli, out/persistence (Native SQL), out/storage
 ```
 
-Module nhỏ có thể đơn giản hóa thư mục, nhưng hướng phụ thuộc phải giữ sạch.
+> **`adapter/out` thay cho `infrastructure`** (không dùng package `infrastructure`). Persistence dùng `NamedParameterJdbcTemplate` + `RowMapper` + file `.sql`, **KHÔNG JPA**. Module nhỏ bỏ bớt layer không dùng; hướng phụ thuộc luôn hướng vào trong.
 
 ## Hướng phụ thuộc
 Được phép:

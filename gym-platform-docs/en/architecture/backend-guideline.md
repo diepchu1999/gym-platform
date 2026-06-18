@@ -12,18 +12,17 @@
 - Do not use JPA repositories for business queries unless explicitly approved by a later ADR.
 
 ## Package Layout Per Module
-Recommended layout:
+The mandatory standard is [`module-architecture.md`](module-architecture.md) (Hexagonal, adapted for Native SQL — ADR-0012). Summary:
 
 ```text
-module-name/
- ├── api/                 # controllers, request/response DTOs
- ├── application/         # use cases, commands, queries, application services
- ├── domain/              # entities, value objects, policies, domain services
- ├── port/                # repository ports, external service ports
- └── infrastructure/      # native SQL repositories, external adapters
+com/gym/<module>/
+ ├── api/                 # public cross-module port (<X>Directory, <X>Ref)
+ ├── domain/             # aggregate, enum, value object (NO framework)
+ ├── application/        # command, query, view, port/in, port/out, service
+ └── adapter/            # in/rest/{admin,client}, in/cli, out/persistence (Native SQL), out/storage
 ```
 
-For smaller modules, folders may be simplified, but the dependency direction must remain clean.
+> **`adapter/out` replaces `infrastructure`** (no `infrastructure` package). Persistence uses `NamedParameterJdbcTemplate` + `RowMapper` + `.sql` files, **NO JPA**. Smaller modules drop unused layers; dependencies always point inward.
 
 ## Dependency Direction
 Allowed:

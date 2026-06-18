@@ -32,6 +32,7 @@ Core architecture docs:
 - `gym-platform-docs/vi/architecture/architecture-overview.md`
 - `gym-platform-docs/vi/architecture/modular-monolith.md`
 - `gym-platform-docs/vi/architecture/backend-guideline.md`
+- `gym-platform-docs/vi/architecture/module-architecture.md`
 - `gym-platform-docs/vi/architecture/database-guideline.md`
 - `gym-platform-docs/vi/architecture/frontend-guideline.md`
 - `gym-platform-docs/vi/architecture/development-guideline.md`
