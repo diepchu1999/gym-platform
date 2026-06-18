@@ -90,7 +90,7 @@ com/gym/<module>/
 - Read model luôn ở `application/view` — **không** để ở `domain` (domain chỉ giữ aggregate + enum + value object + factory thuần).
 - Read/Write **đối xứng**: `Read<X>Port`↔`<X>ReadAdapter`↔`<X>QueryService`; `Write<X>Port`↔`<X>WriteAdapter`↔`<X>CommandService`. Một resource = **1 Read port gộp** + **1 Write port** (không tách Load/Page/Search/Stats). Port đặt theo **resource**, KHÔNG theo tên module. Guard đọc rẻ (`existsById`/by-id) thuộc `Read<X>Port` của resource đó.
 - Map response bằng `static fromDomain(view)` ngay trên record Response — **không** tạo class `<X>ApiMapper` riêng.
-- Command tự validate trong `from(...)`, ném `BusinessException.validation(...)` (→ 400). `from(...)` chỉ nhận **primitive/giá trị thô** — KHÔNG import Request DTO của adapter (dependency rule); controller trải `body.field()` vào `from(...)`. Dữ liệu con dùng nested record `<X>Input` ngay trong command. Helper **generic** dùng `shared/validation/Validations`; parse enum dùng `shared/validation/Enums`. Rule **riêng theo resource** gom vào `<Resource>CommandValidation` (package-private) trong `application/command`.
+- Command tự validate trong `from(...)`, ném `DomainException.validation(...)` (→ 400). `from(...)` chỉ nhận **primitive/giá trị thô** — KHÔNG import Request DTO của adapter (dependency rule); controller trải `body.field()` vào `from(...)`. Dữ liệu con dùng nested record `<X>Input` ngay trong command. Helper **generic** dùng `shared/validation/Validations`; parse enum dùng `shared/validation/Enums`. Rule **riêng theo resource** gom vào `<Resource>CommandValidation` (package-private) trong `application/command`.
 
 ### 3.1. Verb chuẩn cho luồng đọc
 
@@ -158,7 +158,7 @@ Controller chỉ phụ thuộc `port/in` + DTO request/response. Service chỉ p
 4. `application/port/in` — `Get/Search/List/GetStats<X>UseCase` (`@FunctionalInterface`, `handle(...)`).
 5. `application/port/out` *(nếu cần)* — thêm method vào `Read<X>Port` (1 resource = 1 Read port gộp).
 6. `adapter/out/persistence` *(nếu cần)* — `<X>ReadAdapter`: native SQL từ file `.sql` qua `SqlLoader`, map bằng `RowMapper`, phân trang `PageResponse.ofPageIndex`.
-7. `application/service` — `<X>QueryService implements ...UseCase`, `@Transactional(readOnly=true)`; get-by-id `.orElseThrow(BusinessException.notFound(...))`.
+7. `application/service` — `<X>QueryService implements ...UseCase`, `@Transactional(readOnly=true)`; get-by-id `.orElseThrow(DomainException.notFound(...))`.
 8. `adapter/in/rest/<audience>/response` — `<X>...Response` + `static fromDomain(view)`.
 9. `adapter/in/rest/<audience>` — `@GetMapping`, map query → `Query.from(...)` (hoặc `long`) → `usecase.handle(...)` → `.map(Response::fromDomain)` → `ApiResponse.ok(...)`.
 10. Verify: `./mvnw -q test-compile` + smoke.
@@ -166,7 +166,7 @@ Controller chỉ phụ thuộc `port/in` + DTO request/response. Service chỉ p
 ### 7.2. WRITE (POST/PATCH/PUT/DELETE) — thứ tự
 1. (FE contract).
 2. `adapter/in/rest/<audience>/request` *(nếu có body)* — `<Verb><X>Request` (record, kiểu thô; **không** validate ở đây).
-3. `application/command` — `<Verb><X>Command` (+ `<Resource>CommandValidation` nếu có rule domain). `from(...)` nhận **primitive**, ném `BusinessException.validation(...)`. Generic dùng `Validations`, enum dùng `Enums`.
+3. `application/command` — `<Verb><X>Command` (+ `<Resource>CommandValidation` nếu có rule domain). `from(...)` nhận **primitive**, ném `DomainException.validation(...)`. Generic dùng `Validations`, enum dùng `Enums`.
 4. `application/port/in` — `<Verb><X>UseCase` (`handle(command)`).
 5. `application/port/out` *(nếu cần)* — thêm method ghi vào `Write<X>Port`. Input ghi = **command + giá trị hệ thống/derived** (id, code sinh, timestamp, tên đã resolve) hoặc domain aggregate — **KHÔNG** truyền read view. Dữ liệu con derive gom vào write model `New<X>` nested trong port. Guard đọc rẻ lấy từ `Read<X>Port`.
 6. `adapter/out/persistence` *(nếu cần)* — `<X>WriteAdapter`: INSERT/UPDATE bằng Native SQL; **atomic SQL** cho counter/quota/stock (`... WHERE qty >= :n`) theo `database-guideline.md`.
@@ -177,7 +177,7 @@ Controller chỉ phụ thuộc `port/in` + DTO request/response. Service chỉ p
 ### Quy tắc rút ra
 - **READ ≠ WRITE**: GET không bao giờ có `Command`/`Request`/reload; QueryService `readOnly=true`. WRITE validate ở Command, reload sau ghi.
 - **Validate ở command, không ở controller/request**.
-- **Domain check trong service**, không trong adapter (vd vi phạm rule → `BusinessException.validation(...)` ở service, không để UPDATE chạy ra 0 row rồi đoán lỗi).
+- **Domain check trong service**, không trong adapter (vd vi phạm rule → `DomainException.validation(...)` ở service, không để UPDATE chạy ra 0 row rồi đoán lỗi).
 - **Input ghi KHÔNG phải read view**; dùng command + derived hoặc aggregate; dữ liệu con gom vào `New<X>`.
 - **Tái dùng port out trước khi tạo mới**; ghi sang bảng khác thì thêm method `Write<X>Port` mới.
 - **URL theo resource**, không theo entity con.
@@ -186,7 +186,7 @@ Controller chỉ phụ thuộc `port/in` + DTO request/response. Service chỉ p
 
 ## 8. Tiện ích dùng chung (`com.gym.shared`)
 
-> Đã có: `ApiResponse`, `ApiError`, `BusinessException`, `GlobalExceptionHandler`. Sẽ mở rộng theo bảng dưới (adapt sang Native SQL, không JPA).
+> Đã có: `ApiResponse`, `ListResponse`, `DomainException`, `RestExceptionHandler`. Sẽ mở rộng theo bảng dưới (adapt sang Native SQL, không JPA).
 
 | Tiện ích | Vị trí | Khi nào dùng |
 |---|---|---|
@@ -196,9 +196,9 @@ Controller chỉ phụ thuộc `port/in` + DTO request/response. Service chỉ p
 | `PageParams.normalize(page,size,defaultSize,maxSize)` | `shared/api/` | Chuẩn hóa page/size trong `*Query.from(...)`. |
 | `Paged` (interface) | `shared/api/` | `*Query` paged `implements Paged` → có sẵn `pageIndex()`. |
 | `QueryParams` | `shared/api/` | `filterOrNull(v)` (null/blank/"all"→null) cho filter; `searchOrEmpty(v)` cho free-text. |
-| `Validations` | `shared/validation/` | Helper generic cho `*Command.from(...)`: `requireText`, `requirePositive`, `optionalUuid`, `requirePhone`, `requireDate`... Sai → `BusinessException.validation` (400). |
+| `Validations` | `shared/validation/` | Helper generic cho `*Command.from(...)`: `requireText`, `requirePositive`, `optionalUuid`, `requirePhone`, `requireDate`... Sai → `DomainException.validation` (400). |
 | `Enums` | `shared/validation/` | `parseStrict(type,name,value)` (optional) / `requireStrict(...)` (bắt buộc); sai → 400 kèm danh sách giá trị hợp lệ. |
-| `ApiResponse` / `BusinessException` / `ErrorCode` | `shared/api`, `shared/error` | Bọc response & ném lỗi. Bổ sung factory `BusinessException.validation(...)`, `.notFound(...)`, `.conflict(...)`. |
+| `ApiResponse` / `DomainException` / `ErrorCode` | `shared/api`, `shared/error` | Bọc response & ném lỗi. Bổ sung factory `DomainException.validation(...)`, `.notFound(...)`, `.conflict(...)`. |
 
 ---
 
@@ -220,7 +220,7 @@ Source hiện tại chưa có `src/test/java/com/gym/architecture/ArchitectureRu
 | JPA (`*JpaEntity`/`*JpaRepository`/`*JpaSpecifications`) cho write | **Native SQL** (`NamedParameterJdbcTemplate` + `RowMapper`) cho cả read/write | ADR-0004 |
 | Cross-module ref bằng **UUID**/code | **`id: BIGINT` + `code`** | data-model PK = BIGINT identity + business code |
 | `Tuples` (map JPA `Tuple`) | `Rows` (map JDBC `ResultSet`) | không JPA |
-| `DomainException.validation/notFound` | `BusinessException.validation/notFound` | shared của ta |
+| `DomainException` / `RestExceptionHandler` | **giữ nguyên tên gốc** | đã khớp shared của ta |
 | (R1–R4) | thêm **R5**: cấm JPA trong persistence | enforce ADR-0004 |
 
 Giữ nguyên: cấu trúc thư mục, tách read/write, verb chuẩn, cross-module qua `api/`, package-private service/adapter, command tự validate, reload sau ghi, và bổ sung ArchitectureRulesTest source-scan trước khi module nghiệp vụ mở rộng.

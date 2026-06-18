@@ -1,15 +1,19 @@
 package com.gym.shared.api;
 
-/**
- * Envelope chuẩn cho mọi response — không expose row DB trực tiếp (CLAUDE.md).
- */
-public record ApiResponse<T>(boolean success, T data, ApiError error) {
+import java.time.OffsetDateTime;
 
-    public static <T> ApiResponse<T> ok(T data) {
-        return new ApiResponse<>(true, data, null);
+public record ApiResponse<T>(
+        boolean success,
+        String code,
+        String message,
+        T data,
+        OffsetDateTime timestamp
+) {
+    public static <T> ApiResponse<T> success(String code, String message, T data) {
+        return new ApiResponse<>(true, code, message, data, OffsetDateTime.now());
     }
 
-    public static ApiResponse<Void> fail(ApiError error) {
-        return new ApiResponse<>(false, null, error);
+    public static <T> ApiResponse<T> error(String code, String message) {
+        return new ApiResponse<>(false, code,message, null, OffsetDateTime.now());
     }
 }

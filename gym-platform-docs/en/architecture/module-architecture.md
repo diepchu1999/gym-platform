@@ -90,7 +90,7 @@ com/gym/<module>/
 - Read models always live in `application/view` — never in `domain` (domain keeps aggregate + enum + value object + pure factories).
 - Read/Write are **symmetric**: `Read<X>Port`↔`<X>ReadAdapter`↔`<X>QueryService`; `Write<X>Port`↔`<X>WriteAdapter`↔`<X>CommandService`. One resource = **one combined Read port** + **one Write port**. Ports are named per **resource**, not per module. Cheap read guards (`existsById`/by-id) belong to that resource's `Read<X>Port`.
 - Map responses with `static fromDomain(view)` on the Response record — no separate `<X>ApiMapper`.
-- Commands self-validate in `from(...)`, throwing `BusinessException.validation(...)` (→ 400). `from(...)` takes **primitives/raw values** only — it does NOT import adapter Request DTOs (dependency rule); the controller spreads `body.field()` into `from(...)`. Nested data uses a nested `<X>Input` record inside the command. Generic helpers use `shared/validation/Validations`; enum parsing uses `shared/validation/Enums`. Resource-specific rules go into `<Resource>CommandValidation` (package-private) in `application/command`.
+- Commands self-validate in `from(...)`, throwing `DomainException.validation(...)` (→ 400). `from(...)` takes **primitives/raw values** only — it does NOT import adapter Request DTOs (dependency rule); the controller spreads `body.field()` into `from(...)`. Nested data uses a nested `<X>Input` record inside the command. Generic helpers use `shared/validation/Validations`; enum parsing uses `shared/validation/Enums`. Resource-specific rules go into `<Resource>CommandValidation` (package-private) in `application/command`.
 
 ### 3.1. Standard read verbs
 
@@ -158,7 +158,7 @@ The controller depends only on `port/in` + request/response DTOs. The service de
 4. `application/port/in` — `Get/Search/List/GetStats<X>UseCase` (`@FunctionalInterface`, `handle(...)`).
 5. `application/port/out` *(if needed)* — add a method to `Read<X>Port` (1 resource = 1 combined Read port).
 6. `adapter/out/persistence` *(if needed)* — `<X>ReadAdapter`: native SQL from `.sql` via `SqlLoader`, map with `RowMapper`, paginate with `PageResponse.ofPageIndex`.
-7. `application/service` — `<X>QueryService implements ...UseCase`, `@Transactional(readOnly=true)`; get-by-id `.orElseThrow(BusinessException.notFound(...))`.
+7. `application/service` — `<X>QueryService implements ...UseCase`, `@Transactional(readOnly=true)`; get-by-id `.orElseThrow(DomainException.notFound(...))`.
 8. `adapter/in/rest/<audience>/response` — `<X>...Response` + `static fromDomain(view)`.
 9. `adapter/in/rest/<audience>` — `@GetMapping`, map query → `Query.from(...)` (or `long`) → `usecase.handle(...)` → `.map(Response::fromDomain)` → `ApiResponse.ok(...)`.
 10. Verify: `./mvnw -q test-compile` + smoke.
@@ -166,7 +166,7 @@ The controller depends only on `port/in` + request/response DTOs. The service de
 ### 7.2. WRITE (POST/PATCH/PUT/DELETE) — order
 1. (FE contract).
 2. `adapter/in/rest/<audience>/request` *(if body)* — `<Verb><X>Request` (record, raw types; **no** validation here).
-3. `application/command` — `<Verb><X>Command` (+ `<Resource>CommandValidation` if domain rules). `from(...)` takes **primitives**, throws `BusinessException.validation(...)`. Generic via `Validations`, enums via `Enums`.
+3. `application/command` — `<Verb><X>Command` (+ `<Resource>CommandValidation` if domain rules). `from(...)` takes **primitives**, throws `DomainException.validation(...)`. Generic via `Validations`, enums via `Enums`.
 4. `application/port/in` — `<Verb><X>UseCase` (`handle(command)`).
 5. `application/port/out` *(if needed)* — add a write method to `Write<X>Port`. Write input = **command + system/derived values** (id, generated code, timestamp, resolved name) or the domain aggregate — **never** a read view. Derived nested data goes into a `New<X>` write model nested in the port. Cheap read guards come from `Read<X>Port`.
 6. `adapter/out/persistence` *(if needed)* — `<X>WriteAdapter`: INSERT/UPDATE via Native SQL; **atomic SQL** for counters/quota/stock (`... WHERE qty >= :n`) per `database-guideline.md`.
@@ -186,7 +186,7 @@ The controller depends only on `port/in` + request/response DTOs. The service de
 
 ## 8. Shared utilities (`com.gym.shared`)
 
-> Already present: `ApiResponse`, `ApiError`, `BusinessException`, `GlobalExceptionHandler`. Extended per the table below (adapted to Native SQL, no JPA).
+> Already present: `ApiResponse`, `ListResponse`, `DomainException`, `RestExceptionHandler`. Extended per the table below (adapted to Native SQL, no JPA).
 
 | Utility | Location | When to use |
 |---|---|---|
@@ -196,9 +196,9 @@ The controller depends only on `port/in` + request/response DTOs. The service de
 | `PageParams.normalize(page,size,defaultSize,maxSize)` | `shared/api/` | Normalise page/size in `*Query.from(...)`. |
 | `Paged` (interface) | `shared/api/` | Paged `*Query` `implements Paged` → free `pageIndex()`. |
 | `QueryParams` | `shared/api/` | `filterOrNull(v)` (null/blank/"all"→null) for filters; `searchOrEmpty(v)` for free-text. |
-| `Validations` | `shared/validation/` | Generic helpers for `*Command.from(...)`: `requireText`, `requirePositive`, `optionalUuid`, `requirePhone`, `requireDate`... Invalid → `BusinessException.validation` (400). |
+| `Validations` | `shared/validation/` | Generic helpers for `*Command.from(...)`: `requireText`, `requirePositive`, `optionalUuid`, `requirePhone`, `requireDate`... Invalid → `DomainException.validation` (400). |
 | `Enums` | `shared/validation/` | `parseStrict(type,name,value)` (optional) / `requireStrict(...)` (mandatory); invalid → 400 with the list of valid values. |
-| `ApiResponse` / `BusinessException` / `ErrorCode` | `shared/api`, `shared/error` | Wrap responses & throw business errors. Add factories `BusinessException.validation(...)`, `.notFound(...)`, `.conflict(...)`. |
+| `ApiResponse` / `DomainException` / `ErrorCode` | `shared/api`, `shared/error` | Wrap responses & throw business errors. Add factories `DomainException.validation(...)`, `.notFound(...)`, `.conflict(...)`. |
 
 ---
 
@@ -220,7 +220,7 @@ The current source does not yet include `src/test/java/com/gym/architecture/Arch
 | JPA (`*JpaEntity`/`*JpaRepository`/`*JpaSpecifications`) for writes | **Native SQL** (`NamedParameterJdbcTemplate` + `RowMapper`) for read/write | ADR-0004 |
 | Cross-module ref by **UUID**/code | **`id: BIGINT` + `code`** | data-model PK = BIGINT identity + business code |
 | `Tuples` (JPA `Tuple`) | `Rows` (JDBC `ResultSet`) | no JPA |
-| `DomainException.validation/notFound` | `BusinessException.validation/notFound` | our shared layer |
+| `DomainException` / `RestExceptionHandler` | **kept original name** | already matches our shared layer |
 | (R1–R4) | added **R5**: forbid JPA in persistence | enforce ADR-0004 |
 
 Kept as-is: directory structure, read/write split, standard verbs, cross-module via `api/`, package-private services/adapters, self-validating commands, reload-after-write, and adding source-scan ArchitectureRulesTest before business modules expand.
