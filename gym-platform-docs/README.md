@@ -27,12 +27,11 @@ gym-platform-docs/
 
 | Section | vi/ | en/ |
 |---|---|---|
-| business | ✅ | ✅ |
-| architecture (guidelines) | ⏳ | ✅ |
-| architecture/data-model | ✅ | ⏳ |
-| architecture (solution + overview) | ⏳ | ⏳ |
-| modules | ⏳ | ✅ |
-| decisions (ADR) | ⏳ | partial |
-| dev-notes | ⏳ | ✅ |
+| business (5) | ✅ | ✅ |
+| architecture (guidelines + overview + solution) (9) | ✅ | ✅ |
+| architecture/data-model (11) | ✅ | ✅ |
+| modules (12) | ✅ | ✅ |
+| decisions / ADR (11) | ✅ | ✅ |
+| dev-notes (1) | ✅ | ✅ |
 
-(⏳ = đang dịch / in progress)
+**Hoàn tất: 49 file mỗi bản (vi/ + en/).** Sơ đồ kiến trúc dùng chung ở [`diagrams/`](diagrams/).
