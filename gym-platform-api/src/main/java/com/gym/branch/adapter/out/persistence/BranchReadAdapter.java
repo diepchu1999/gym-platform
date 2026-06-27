@@ -96,4 +96,18 @@ class BranchReadAdapter implements ReadBranchPort {
             return Optional.empty();
         }
     }
+
+    @Override
+    public Optional<BranchRef> findRefByCode(String code) {
+        try {
+            BranchRef ref = jdbc.queryForObject(
+                    sql.load(BranchSqlPaths.FIND_BRANCH_REF_BY_CODE),
+                    new MapSqlParameterSource("code", code),
+                    BranchRowMappers.BRANCH_REF
+            );
+            return Optional.ofNullable(ref);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
 }

@@ -58,4 +58,11 @@ class BranchQueryService implements SearchBranchesUseCase, GetBranchUseCase, Lis
     public Optional<BranchRef> findRefById(long id) {
         return readBranchPort.findRefById(id);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<BranchRef> findRefByCode(String code) {
+        String normalizedCode = Validations.requireText(code, "code");
+        return readBranchPort.findRefByCode(normalizedCode);
+    }
 }

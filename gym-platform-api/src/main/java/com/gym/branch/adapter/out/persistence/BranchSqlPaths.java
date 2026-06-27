@@ -7,6 +7,7 @@ final class BranchSqlPaths {
     static final String INSERT_BRANCH = "sql/branch/insert_branch.sql";
     static final String EXISTS_BRANCH_BY_ID = "sql/branch/exists_branch_by_id.sql";
     static final String FIND_BRANCH_REF_BY_ID = "sql/branch/find_branch_ref_by_id.sql";
+    static final String FIND_BRANCH_REF_BY_CODE = "sql/branch/find_branch_ref_by_code.sql";
 
     private BranchSqlPaths() {
     }
