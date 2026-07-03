@@ -13,6 +13,8 @@ import java.util.Optional;
 public interface ReadStaffPort {
     Optional<Staff> getByEmployeeCode(String employeeCode);
 
+    Optional<Staff> getByUserAccountId(long userAccountId);
+
     PageResponse<StaffListItem> search(SearchStaffQuery query);
 
     List<StaffAssignment> listAssignments(long staffId);

@@ -36,6 +36,16 @@ class StaffWriteAdapter implements WriteStaffPort {
     }
 
     @Override
+    public boolean linkUserAccount(long staffId, long userAccountId) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("staffId", staffId, Types.BIGINT)
+                .addValue("userAccountId", userAccountId, Types.BIGINT);
+
+        int updated = jdbc.update(sql.load(StaffSqlPaths.LINK_USER_ACCOUNT), params);
+        return updated > 0;
+    }
+
+    @Override
     public long insertAssignment(NewStaffAssignment assignment) {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("staffId", assignment.staffId(), Types.BIGINT)

@@ -5,12 +5,12 @@ INSERT INTO identity.identity_user_account (
     email,
     status
 ) VALUES (
-             :keycloakUserId,
-             :accountType,
-             :username,
-             :email,
-             'ACTIVE'
-         )
+    :keycloakUserId,
+    :accountType,
+    :username,
+    :email,
+    'ACTIVE'
+)
 RETURNING
     id,
     keycloak_user_id,

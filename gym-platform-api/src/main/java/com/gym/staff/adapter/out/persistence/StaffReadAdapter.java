@@ -44,6 +44,20 @@ class StaffReadAdapter implements ReadStaffPort {
     }
 
     @Override
+    public Optional<Staff> getByUserAccountId(long userAccountId) {
+        try {
+            Staff staff = jdbc.queryForObject(
+                    sql.load(StaffSqlPaths.GET_STAFF_BY_USER_ACCOUNT_ID),
+                    new MapSqlParameterSource("userAccountId", userAccountId),
+                    StaffRowMappers.STAFF
+            );
+            return Optional.ofNullable(staff);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
     public PageResponse<StaffListItem> search(SearchStaffQuery query) {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("status", query.status() == null ? null : query.status().name(), Types.VARCHAR)
