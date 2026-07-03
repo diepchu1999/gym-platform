@@ -2,6 +2,13 @@ spring:
   application:
     name: gym-platform-api
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8085/realms/gym-platform}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8085/realms/gym-platform/protocol/openid-connect/certs}
+
   # Datasource -> Postgres (compose). Default khớp infra/docker/docker-compose.yml.
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/gym_platform}
