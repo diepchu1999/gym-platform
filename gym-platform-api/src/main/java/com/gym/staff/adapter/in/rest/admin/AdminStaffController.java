@@ -16,10 +16,6 @@ import com.gym.staff.application.port.in.GetStaffUseCase;
 import com.gym.staff.application.port.in.LinkStaffUserAccountUseCase;
 import com.gym.staff.application.port.in.SearchStaffUseCase;
 import com.gym.staff.application.query.SearchStaffQuery;
-import com.gym.security.api.BranchAuthorizationService;
-import com.gym.security.api.SecurityPermission;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,22 +33,19 @@ class AdminStaffController {
     private final CreateStaffUseCase createStaff;
     private final AssignBranchRoleUseCase assignBranchRole;
     private final LinkStaffUserAccountUseCase linkStaffUserAccount;
-    private final BranchAuthorizationService authorizationService;
 
     AdminStaffController(
             SearchStaffUseCase searchStaff,
             GetStaffUseCase getStaff,
             CreateStaffUseCase createStaff,
             AssignBranchRoleUseCase assignBranchRole,
-            LinkStaffUserAccountUseCase linkStaffUserAccount,
-            BranchAuthorizationService authorizationService
+            LinkStaffUserAccountUseCase linkStaffUserAccount
     ) {
         this.searchStaff = searchStaff;
         this.getStaff = getStaff;
         this.createStaff = createStaff;
         this.assignBranchRole = assignBranchRole;
         this.linkStaffUserAccount = linkStaffUserAccount;
-        this.authorizationService = authorizationService;
     }
 
     @GetMapping
@@ -78,17 +71,13 @@ class AdminStaffController {
     }
 
     @PostMapping
-    ApiResponse<StaffDetailResponse> create(
-            @AuthenticationPrincipal Jwt jwt,
-            @RequestBody CreateStaffRequest request
-    ) {
+    ApiResponse<StaffDetailResponse> create(@RequestBody CreateStaffRequest request) {
         CreateStaffCommand command = CreateStaffCommand.from(
                 request.employeeCode(),
                 request.fullName(),
                 request.phone(),
                 request.email()
         );
-        authorizationService.requireGlobalPermission(jwt.getSubject(), SecurityPermission.STAFF_MANAGE);
         return ApiResponse.success(
                 "STAFF_CREATED",
                 "Staff created",
@@ -98,7 +87,6 @@ class AdminStaffController {
 
     @PostMapping("/{employeeCode}/assignments")
     ApiResponse<StaffDetailResponse> assign(
-            @AuthenticationPrincipal Jwt jwt,
             @PathVariable String employeeCode,
             @RequestBody AssignBranchRoleRequest request
     ) {
@@ -106,15 +94,6 @@ class AdminStaffController {
                 request.branchCode(),
                 request.roleCode()
         );
-        if (command.branchCode() == null) {
-            authorizationService.requireGlobalPermission(jwt.getSubject(), SecurityPermission.RBAC_MANAGE);
-        } else {
-            authorizationService.requireBranchPermission(
-                    jwt.getSubject(),
-                    command.branchCode(),
-                    SecurityPermission.RBAC_MANAGE
-            );
-        }
         return ApiResponse.success(
                 "STAFF_ASSIGNMENT_CREATED",
                 "Staff assignment created",
