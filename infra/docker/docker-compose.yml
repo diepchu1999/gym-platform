@@ -51,7 +51,7 @@ services:
     image: quay.io/keycloak/keycloak:26.1
     container_name: gym-platform-keycloak
     restart: unless-stopped
-    command: ["start-dev"]
+    command: ["start-dev", "--import-realm"]
     environment:
       # Keycloak 26+ dùng KC_BOOTSTRAP_ADMIN_* để tạo admin lần đầu
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
@@ -62,6 +62,7 @@ services:
       - "${KEYCLOAK_PORT:-8085}:8080"
     volumes:
       - keycloak-data:/opt/keycloak/data
+      - ./keycloak/import:/opt/keycloak/data/import:ro
     networks: [gym-platform-net]
 
   # ---------------- Redis: cache + short locks (QR TTL, nonce, dup-scan, rate limit) ----------------
