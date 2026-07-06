@@ -70,4 +70,11 @@ class MemberQueryService implements GetMemberUseCase, SearchMembersUseCase, Memb
     public Optional<MemberRef> findRefById(long id) {
         return readMemberPort.findRefById(id);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<MemberRef> findRefByCode(String code) {
+        String normalizedCode = Validations.requireText(code, "code");
+        return readMemberPort.findRefByCode(normalizedCode);
+    }
 }

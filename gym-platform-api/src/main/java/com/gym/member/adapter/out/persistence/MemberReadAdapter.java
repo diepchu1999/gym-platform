@@ -87,4 +87,18 @@ class MemberReadAdapter implements ReadMemberPort {
             return Optional.empty();
         }
     }
+
+    @Override
+    public Optional<MemberRef> findRefByCode(String code) {
+        try {
+            MemberRef memberRef = jdbc.queryForObject(
+                    sql.load(MemberSqlPaths.FIND_MEMBER_REF_BY_CODE),
+                    new MapSqlParameterSource("code", code),
+                    MemberRowMappers.MEMBER_REF
+            );
+            return Optional.ofNullable(memberRef);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
 }
