@@ -1,6 +1,7 @@
 package com.gym.identity.adapter.out.persistence;
 
 import com.gym.identity.api.RoleDirectory;
+import com.gym.identity.api.RolePermissionDirectory;
 import com.gym.identity.api.RoleRef;
 import com.gym.shared.sql.SqlLoader;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-class RoleReadAdapter implements RoleDirectory {
+class RoleReadAdapter implements RoleDirectory, RolePermissionDirectory {
     private final NamedParameterJdbcTemplate jdbc;
     private final SqlLoader sql;
 
@@ -48,4 +49,15 @@ class RoleReadAdapter implements RoleDirectory {
         }
     }
 
+    @Override
+    public boolean roleHasPermission(long roleId, String permissionCode) {
+        Boolean exists = jdbc.queryForObject(
+                sql.load(RoleSqlPaths.EXISTS_ROLE_PERMISSION),
+                new MapSqlParameterSource()
+                        .addValue("roleId", roleId)
+                        .addValue("permissionCode", permissionCode),
+                Boolean.class
+        );
+        return Boolean.TRUE.equals(exists);
+    }
 }

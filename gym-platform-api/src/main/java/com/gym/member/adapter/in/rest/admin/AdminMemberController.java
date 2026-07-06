@@ -8,8 +8,12 @@ import com.gym.member.application.port.in.CreateMemberUseCase;
 import com.gym.member.application.port.in.GetMemberUseCase;
 import com.gym.member.application.port.in.SearchMembersUseCase;
 import com.gym.member.application.query.SearchMembersQuery;
+import com.gym.security.api.BranchAuthorizationService;
+import com.gym.security.api.SecurityPermission;
 import com.gym.shared.api.ApiResponse;
 import com.gym.shared.api.PageResponse;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,15 +28,18 @@ class AdminMemberController {
     private final CreateMemberUseCase createMemberUseCase;
     private final GetMemberUseCase getMemberUseCase;
     private final SearchMembersUseCase searchMembersUseCase;
+    private final BranchAuthorizationService authorizationService;
 
     AdminMemberController(
             CreateMemberUseCase createMemberUseCase,
             GetMemberUseCase getMemberUseCase,
-            SearchMembersUseCase searchMembersUseCase
+            SearchMembersUseCase searchMembersUseCase,
+            BranchAuthorizationService authorizationService
     ) {
         this.createMemberUseCase = createMemberUseCase;
         this.getMemberUseCase = getMemberUseCase;
         this.searchMembersUseCase = searchMembersUseCase;
+        this.authorizationService = authorizationService;
     }
 
     @GetMapping
@@ -56,7 +63,10 @@ class AdminMemberController {
     }
 
     @PostMapping
-    ApiResponse<MemberDetailResponse> create(@RequestBody CreateMemberRequest request) {
+    ApiResponse<MemberDetailResponse> create(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody CreateMemberRequest request
+    ) {
         CreateMemberCommand command = CreateMemberCommand.from(
                 request.code(),
                 request.fullName(),
@@ -65,6 +75,11 @@ class AdminMemberController {
                 request.gender(),
                 request.dateOfBirth(),
                 request.homeBranchCode()
+        );
+        authorizationService.requireBranchPermission(
+                jwt.getSubject(),
+                command.homeBranchCode(),
+                SecurityPermission.MEMBER_CREATE
         );
         MemberDetailResponse response = MemberDetailResponse.fromDomain(createMemberUseCase.handle(command));
         return ApiResponse.success("MEMBER_CREATED", "Member created", response);

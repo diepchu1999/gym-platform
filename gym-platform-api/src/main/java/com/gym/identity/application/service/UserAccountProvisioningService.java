@@ -1,6 +1,7 @@
 package com.gym.identity.application.service;
 
 import com.gym.identity.api.UserAccountProvisioning;
+import com.gym.identity.api.UserAccountDirectory;
 import com.gym.identity.api.UserAccountRef;
 import com.gym.identity.application.port.out.ReadUserAccountPort;
 import com.gym.identity.application.port.out.WriteUserAccountPort;
@@ -10,9 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
+import java.util.Optional;
 
 @Service
-class UserAccountProvisioningService implements UserAccountProvisioning {
+class UserAccountProvisioningService implements UserAccountProvisioning, UserAccountDirectory {
     private static final String ACCOUNT_TYPE_STAFF = "STAFF";
 
     private final ReadUserAccountPort readUserAccountPort;
@@ -46,4 +48,10 @@ class UserAccountProvisioningService implements UserAccountProvisioning {
         ));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<UserAccountRef> findByKeycloakUserId(UUID keycloakUserId) {
+        UUID requiredKeycloakUserId = Validations.requireNonNull(keycloakUserId, "keycloakUserId");
+        return readUserAccountPort.findByKeycloakUserId(requiredKeycloakUserId);
+    }
 }
