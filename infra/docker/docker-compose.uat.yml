@@ -1,0 +1,180 @@
+name: gym-platform-uat
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gym-uat-postgres
+    restart: unless-stopped
+    env_file:
+      - .env.uat
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gym_platform}
+      POSTGRES_USER: ${POSTGRES_USER:-gym}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/uat-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    mem_limit: 768m
+    networks:
+      - gym-uat-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    container_name: gym-uat-keycloak
+    restart: unless-stopped
+    command: ["start", "--import-realm"]
+    env_file:
+      - .env.uat
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${KEYCLOAK_DB:-keycloak}
+      KC_DB_USERNAME: ${POSTGRES_USER:-gym}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      KC_PROXY_HEADERS: xforwarded
+      KC_HOSTNAME: ${KC_HOSTNAME}
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK'"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    mem_limit: 1024m
+    networks:
+      - gym-uat-net
+
+  app:
+    build:
+      context: ../../gym-platform-api
+      dockerfile: Dockerfile
+    image: ghcr.io/${GHCR_OWNER}/gym-platform-api:${APP_TAG:-uat}
+    container_name: gym-uat-api
+    restart: unless-stopped
+    env_file:
+      - .env.uat
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-gym_platform}
+      DB_USERNAME: ${POSTGRES_USER:-gym}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI}
+      KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/gym-platform/protocol/openid-connect/certs
+      TRACING_SAMPLE: ${TRACING_SAMPLE:-0.0}
+      ZIPKIN_ENDPOINT: ${ZIPKIN_ENDPOINT:-http://zipkin:9411/api/v2/spans}
+      JAVA_OPTS: ${APP_JAVA_OPTS:--XX:MaxRAMPercentage=65.0 -XX:+ExitOnOutOfMemoryError}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/actuator/health | grep -q '\"status\":\"UP\"'"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+    mem_limit: 768m
+    networks:
+      - gym-uat-net
+
+  redis:
+    image: redis:7-alpine
+    profiles: ["redis"]
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    networks:
+      - gym-uat-net
+
+  minio:
+    image: minio/minio:latest
+    profiles: ["object-storage"]
+    restart: unless-stopped
+    command: ["server", "/data", "--console-address", ":9001"]
+    env_file:
+      - .env.uat
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio-data:/data
+    networks:
+      - gym-uat-net
+
+  prometheus:
+    image: prom/prometheus:latest
+    profiles: ["observability"]
+    restart: unless-stopped
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - gym-uat-net
+
+  grafana:
+    image: grafana/grafana:latest
+    profiles: ["observability"]
+    restart: unless-stopped
+    env_file:
+      - .env.uat
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - gym-uat-net
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    profiles: ["observability"]
+    restart: unless-stopped
+    networks:
+      - gym-uat-net
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    profiles: ["tools"]
+    restart: unless-stopped
+    env_file:
+      - .env.uat
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@gym-platform.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - gym-uat-net
+
+networks:
+  gym-uat-net:
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  prometheus-data:
+  grafana-data:
+  pgadmin-data:
