@@ -50,4 +50,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=5 \
 
 USER gym
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher"]
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app/*.jar"]
